@@ -98,6 +98,15 @@
   cursor: pointer;
 }
 
+/* Invisible spacer used on Vitality row to align with pool rows that have a remove button */
+.myttrpg-actor-sheet .pool-btn-spacer {
+  flex: 0 0 auto;
+  width: 20px;
+  height: 20px;
+  visibility: hidden;
+  pointer-events: none;
+}
+
 /* Add Pool button */
 .myttrpg-actor-sheet .myttrpg-btn {
   margin-top: 4px;
