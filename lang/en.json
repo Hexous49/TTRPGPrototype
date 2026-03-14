@@ -5,5 +5,11 @@
   "MYTTRPG.ItemTypes.skill": "Skill",
   "MYTTRPG.Attributes.strength": "Strength",
   "MYTTRPG.Attributes.agility": "Agility",
-  "MYTTRPG.Attributes.intellect": "Intellect"
+  "MYTTRPG.Attributes.intellect": "Intellect",
+  "MYTTRPG.Health.vitality": "Vitality",
+  "MYTTRPG.Health.pool.name": "Pool Name",
+  "MYTTRPG.Health.pool.value": "Current",
+  "MYTTRPG.Health.pool.max": "Max",
+  "MYTTRPG.Health.addPool": "Add Pool",
+  "MYTTRPG.Health.removePool": "Remove Pool"
 }

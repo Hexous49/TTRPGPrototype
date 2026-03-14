@@ -1,12 +1,19 @@
 const { fields } = foundry.data;
 
+const healthPoolSchema = () => new fields.SchemaField({
+  name: new fields.StringField({ required: true, initial: "" }),
+  value: new fields.NumberField({ required: true, integer: true, min: 0, initial: 0 }),
+  max: new fields.NumberField({ required: true, integer: true, min: 0, initial: 0 }),
+});
+
 export class MyTTRPGCharacterData extends foundry.abstract.TypeDataModel {
   static defineSchema() {
     return {
-      health: new fields.SchemaField({
+      vitality: new fields.SchemaField({
         value: new fields.NumberField({ required: true, integer: true, min: 0, initial: 10 }),
         max: new fields.NumberField({ required: true, integer: true, min: 0, initial: 10 }),
       }),
+      pools: new fields.ArrayField(healthPoolSchema()),
       attributes: new fields.SchemaField({
         strength: new fields.NumberField({ required: true, integer: true, min: 1, max: 20, initial: 10 }),
         agility: new fields.NumberField({ required: true, integer: true, min: 1, max: 20, initial: 10 }),
@@ -18,7 +25,7 @@ export class MyTTRPGCharacterData extends foundry.abstract.TypeDataModel {
 
   static get trackableAttributes() {
     return {
-      bar: [["health", "value"]],
+      bar: [["vitality", "value"]],
       value: [
         ["attributes", "strength"],
         ["attributes", "agility"],
@@ -31,10 +38,11 @@ export class MyTTRPGCharacterData extends foundry.abstract.TypeDataModel {
 export class MyTTRPGNPCData extends foundry.abstract.TypeDataModel {
   static defineSchema() {
     return {
-      health: new fields.SchemaField({
+      vitality: new fields.SchemaField({
         value: new fields.NumberField({ required: true, integer: true, min: 0, initial: 5 }),
         max: new fields.NumberField({ required: true, integer: true, min: 0, initial: 5 }),
       }),
+      pools: new fields.ArrayField(healthPoolSchema()),
       cr: new fields.NumberField({ required: true, min: 0, initial: 1 }),
       notes: new fields.HTMLField(),
     };
@@ -42,7 +50,7 @@ export class MyTTRPGNPCData extends foundry.abstract.TypeDataModel {
 
   static get trackableAttributes() {
     return {
-      bar: [["health", "value"]],
+      bar: [["vitality", "value"]],
       value: [],
     };
   }
