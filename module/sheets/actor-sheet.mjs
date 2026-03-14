@@ -34,8 +34,8 @@ export class MyTTRPGActorSheet extends foundry.appv1.sheets.ActorSheet {
     };
 
     // Build a plain system object with null-safe values so number inputs never render empty.
-    // totalHealth is a derived value set in prepareDerivedData — it lives on the live system
-    // object but is NOT included in toObject(), so we read it separately.
+    // totalHealth IS in the schema but its values are overwritten by prepareDerivedData() at
+    // runtime — read from the live system object (not toObject()) to get the computed totals.
     const sys         = this.actor.system.toObject();
     const totalHealth = this.actor.system.totalHealth ?? { value: 0, max: 0 };
     context.system = {
