@@ -106,8 +106,10 @@ export class MyTTRPGSkillData extends foundry.abstract.TypeDataModel {
 export class MyTTRPGShieldGeneratorData extends foundry.abstract.TypeDataModel {
   static defineSchema() {
     return {
-      shieldMax:   new fields.NumberField({ required: true, nullable: false, integer: true, min: 0, initial: 10 }),
-      description: new fields.HTMLField(),
+      shieldMax:    new fields.NumberField({ required: true, nullable: false, integer: true, min: 0, initial: 10 }),
+      // null means "full health" — a stored number persists damage across equip/stow cycles
+      currentValue: new fields.NumberField({ nullable: true, integer: true, min: 0, initial: null }),
+      description:  new fields.HTMLField(),
     };
   }
 }
@@ -115,8 +117,10 @@ export class MyTTRPGShieldGeneratorData extends foundry.abstract.TypeDataModel {
 export class MyTTRPGArmorData extends foundry.abstract.TypeDataModel {
   static defineSchema() {
     return {
-      armorMax:    new fields.NumberField({ required: true, nullable: false, integer: true, min: 0, initial: 10 }),
-      description: new fields.HTMLField(),
+      armorMax:     new fields.NumberField({ required: true, nullable: false, integer: true, min: 0, initial: 10 }),
+      // null means "full health" — a stored number persists damage across equip/stow cycles
+      currentValue: new fields.NumberField({ nullable: true, integer: true, min: 0, initial: null }),
+      description:  new fields.HTMLField(),
     };
   }
 }

@@ -168,9 +168,11 @@ export class MyTTRPGActorSheet extends foundry.appv1.sheets.ActorSheet {
     if (!slotDef) return;
     if (this.actor.system[slotDef.slotIdField]) return; // slot already filled
 
+    // Use the item's persisted currentValue if it has one; otherwise start at full health (max).
+    const savedValue = item.system.currentValue ?? item.system[slotDef.maxField];
     const pools = [
       ...this.actor.system.toObject().pools,
-      { name: item.name, value: 0, max: item.system[slotDef.maxField], sourceItemId: item.id },
+      { name: item.name, value: savedValue, max: item.system[slotDef.maxField], sourceItemId: item.id },
     ];
 
     await this.actor.update({
@@ -187,9 +189,17 @@ export class MyTTRPGActorSheet extends foundry.appv1.sheets.ActorSheet {
     const equippedId = this.actor.system[slotIdField];
     if (!equippedId) return;
 
+    // Persist the pool's current damage state back onto the embedded item
+    // so re-equipping it later restores the same value.
+    const allPools   = this.actor.system.toObject().pools;
+    const pool       = allPools.find(p => p.sourceItemId === equippedId);
+    const embeddedItem = this.actor.items.get(equippedId);
+    if (pool && embeddedItem) {
+      await embeddedItem.update({ "system.currentValue": pool.value });
+    }
+
     // Remove the pool but keep the embedded item — it reappears in inventory
-    const pools = this.actor.system.toObject().pools
-      .filter(p => p.sourceItemId !== equippedId);
+    const pools = allPools.filter(p => p.sourceItemId !== equippedId);
 
     await this.actor.update({
       [`system.${slotIdField}`]: "",
@@ -339,6 +349,12 @@ export class MyTTRPGActorSheet extends foundry.appv1.sheets.ActorSheet {
     const updates = { "system.pools": pools.filter((_, i) => i !== index) };
 
     if (pool.sourceItemId) {
+      // Persist current damage state onto the item before stowing it
+      const embeddedItem = this.actor.items.get(pool.sourceItemId);
+      if (embeddedItem) {
+        await embeddedItem.update({ "system.currentValue": pool.value });
+      }
+
       // Clear the equipment slot — item stays in inventory (not deleted)
       for (const { slotIdField } of Object.values(EQUIPMENT_SLOTS)) {
         if (this.actor.system[slotIdField] === pool.sourceItemId) {
