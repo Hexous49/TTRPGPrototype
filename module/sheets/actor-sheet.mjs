@@ -53,7 +53,7 @@ export class MyTTRPGActorSheet extends foundry.appv1.sheets.ActorSheet {
             const name = html.find('[name="name"]').val().trim() || game.i18n.localize("MYTTRPG.Health.pool.default");
             const value = parseInt(html.find('[name="value"]').val()) || 0;
             const max = parseInt(html.find('[name="max"]').val()) || 0;
-            const pools = [...this.actor.system.pools, { name, value, max }];
+            const pools = [...this.actor.system.toObject().pools, { name, value, max }];
             await this.actor.update({ "system.pools": pools });
           },
         },
@@ -68,7 +68,7 @@ export class MyTTRPGActorSheet extends foundry.appv1.sheets.ActorSheet {
 
   async _onRemovePool(ev) {
     const index = Number(ev.currentTarget.dataset.index);
-    const pools = this.actor.system.pools.filter((_, i) => i !== index);
+    const pools = this.actor.system.toObject().pools.filter((_, i) => i !== index);
     await this.actor.update({ "system.pools": pools });
   }
 }
