@@ -6,7 +6,6 @@ export class MyTTRPGActorSheet extends foundry.appv1.sheets.ActorSheet {
       width: 620,
       height: 560,
       resizable: true,
-      submitOnChange: true,
       closeOnSubmit: false,
     });
   }
@@ -15,30 +14,61 @@ export class MyTTRPGActorSheet extends foundry.appv1.sheets.ActorSheet {
     const context = super.getData(options);
     context.isCharacter = this.actor.type === "character";
     context.isNPC = this.actor.type === "npc";
+
+    // Hardcode English labels — game.i18n is not loading our lang file
     context.labels = {
-      sectionHealth:      game.i18n.localize("MYTTRPG.Section.health"),
-      sectionAttributes:  game.i18n.localize("MYTTRPG.Section.attributes"),
-      sectionBiography:   game.i18n.localize("MYTTRPG.Section.biography"),
-      sectionNotes:       game.i18n.localize("MYTTRPG.Section.notes"),
-      vitality:           game.i18n.localize("MYTTRPG.Health.vitality"),
-      poolName:           game.i18n.localize("MYTTRPG.Health.pool.name"),
-      addPool:            game.i18n.localize("MYTTRPG.Health.addPool"),
-      removePool:         game.i18n.localize("MYTTRPG.Health.removePool"),
-      strength:           game.i18n.localize("MYTTRPG.Attributes.strength"),
-      agility:            game.i18n.localize("MYTTRPG.Attributes.agility"),
-      intellect:          game.i18n.localize("MYTTRPG.Attributes.intellect"),
-      cr:                 game.i18n.localize("MYTTRPG.NPC.cr"),
+      sectionHealth:     "Health",
+      sectionAttributes: "Attributes",
+      sectionBiography:  "Biography",
+      sectionNotes:      "Notes",
+      vitality:          "Vitality",
+      poolName:          "Pool Name",
+      addPool:           "Add Pool",
+      removePool:        "Remove Pool",
+      strength:          "Strength",
+      agility:           "Agility",
+      intellect:         "Intellect",
+      cr:                "CR",
     };
+
+    // Build a plain system object with null-safe values so number inputs never render empty
+    const sys = this.actor.system.toObject();
+    context.system = {
+      vitality: {
+        value: sys.vitality?.value  ?? 0,
+        max:   sys.vitality?.max    ?? 0,
+      },
+      pools: sys.pools ?? [],
+      attributes: {
+        strength:  sys.attributes?.strength  ?? 10,
+        agility:   sys.attributes?.agility   ?? 10,
+        intellect: sys.attributes?.intellect ?? 10,
+      },
+      biography: sys.biography ?? "",
+      notes:     sys.notes     ?? "",
+      cr:        sys.cr        ?? 1,
+    };
+
     return context;
   }
 
   async _updateObject(event, formData) {
-    return this.actor.update(formData);
+    const expanded = foundry.utils.expandObject(formData);
+
+    // expandObject leaves numeric-keyed children as objects — convert pools to array
+    if (expanded.system?.pools && !Array.isArray(expanded.system.pools)) {
+      expanded.system.pools = Object.values(expanded.system.pools);
+    }
+
+    return this.actor.update(expanded);
   }
 
   activateListeners(html) {
     super.activateListeners(html);
     if (!this.isEditable) return;
+
+    // Manually save on any field change (submitOnChange is unreliable in appv1 on v13)
+    html.find("input, textarea, select").change((ev) => this._onSubmit(ev));
 
     html.find(".add-pool").click((ev) => this._onAddPool(ev));
     html.find(".remove-pool").click((ev) => this._onRemovePool(ev));
@@ -48,31 +78,31 @@ export class MyTTRPGActorSheet extends foundry.appv1.sheets.ActorSheet {
     const content = `
       <form>
         <div class="form-group">
-          <label>${game.i18n.localize("MYTTRPG.Health.pool.name")}</label>
-          <input type="text" name="name" value="" placeholder="${game.i18n.localize("MYTTRPG.Health.pool.name")}">
+          <label>Pool Name</label>
+          <input type="text" name="name" value="" placeholder="Pool Name">
         </div>
         <div class="form-group">
-          <label>${game.i18n.localize("MYTTRPG.Health.pool.value")}</label>
+          <label>Current</label>
           <input type="number" name="value" value="0" min="0">
         </div>
         <div class="form-group">
-          <label>${game.i18n.localize("MYTTRPG.Health.pool.max")}</label>
+          <label>Max</label>
           <input type="number" name="max" value="0" min="0">
         </div>
       </form>
     `;
 
     new Dialog({
-      title: game.i18n.localize("MYTTRPG.Health.addPool.title"),
+      title: "Add Health Pool",
       content,
       buttons: {
         create: {
           icon: '<i class="fas fa-check"></i>',
-          label: game.i18n.localize("MYTTRPG.Health.addPool.confirm"),
+          label: "Add",
           callback: async (html) => {
-            const name = html.find('[name="name"]').val().trim() || game.i18n.localize("MYTTRPG.Health.pool.default");
+            const name  = html.find('[name="name"]').val().trim() || "New Pool";
             const value = parseInt(html.find('[name="value"]').val()) || 0;
-            const max = parseInt(html.find('[name="max"]').val()) || 0;
+            const max   = parseInt(html.find('[name="max"]').val())   || 0;
             const pools = [...this.actor.system.toObject().pools, { name, value, max }];
             await this.actor.update({ "system.pools": pools });
             this.render(false);
@@ -80,7 +110,7 @@ export class MyTTRPGActorSheet extends foundry.appv1.sheets.ActorSheet {
         },
         cancel: {
           icon: '<i class="fas fa-times"></i>',
-          label: game.i18n.localize("Cancel"),
+          label: "Cancel",
         },
       },
       default: "create",
