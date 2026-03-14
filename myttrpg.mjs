@@ -33,6 +33,91 @@ Hooks.once("init", () => {
   });
 });
 
+// ─── Chat: Apply Damage button ────────────────────────────────────────────────
+// Any chat message that has flags.myttrpg.weaponDamageTotal gets an
+// "Apply N Damage" button injected below the roll.  Clicking it opens a
+// dialog listing every health pool on the currently selected token.
+
+Hooks.on("renderChatMessage", (message, html) => {
+  const total = message.flags?.myttrpg?.weaponDamageTotal;
+  if (total == null) return;
+
+  // html may be a jQuery object (v12) or a plain Element (v13 AppV2 path).
+  const rootEl = html?.jquery ? html[0] : html;
+  const contentEl = rootEl?.querySelector?.(".message-content");
+  if (!contentEl) return;
+
+  const wrap = document.createElement("div");
+  wrap.className = "myttrpg-apply-damage-wrap";
+  wrap.innerHTML = `<button type="button" class="myttrpg-apply-damage">Apply ${total} Damage</button>`;
+  contentEl.append(wrap);
+  wrap.querySelector(".myttrpg-apply-damage")
+      .addEventListener("click", () => myttrpgOpenApplyDialog(total));
+});
+
+function myttrpgOpenApplyDialog(damage) {
+  // Require exactly one selected token
+  const tokens = canvas.tokens?.controlled ?? [];
+  if (!tokens.length) {
+    ui.notifications.warn("Select a token on the canvas first.");
+    return;
+  }
+
+  const actor = tokens[0].actor;
+  if (!actor?.system) return;
+
+  const sys = actor.system;
+
+  // Build a flat list of every pool the actor has
+  const pools = [
+    { label: "Vitality", value: sys.vitality?.value ?? 0, max: sys.vitality?.max ?? 0, key: "vitality" },
+    ...(sys.pools ?? []).map((p, i) => ({
+      label: p.name,
+      value: p.value,
+      max:   p.max,
+      key:   `pool:${i}`,
+    })),
+  ];
+
+  const rows = pools.map(p => `
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+      <span style="flex:1;font-weight:bold;">${p.label}</span>
+      <span style="min-width:64px;text-align:right;color:#555;">${p.value} / ${p.max}</span>
+      <button type="button" class="myttrpg-apply-pool-btn" data-key="${p.key}"
+              style="flex:0 0 auto;padding:1px 8px;cursor:pointer;">Apply</button>
+    </div>`).join("");
+
+  const d = new Dialog({
+    title: `Apply ${damage} Damage — ${actor.name}`,
+    content: `<form style="padding:4px 2px;">${rows}</form>`,
+    buttons: {
+      cancel: { icon: '<i class="fas fa-times"></i>', label: "Cancel" },
+    },
+    render: (html) => {
+      html.find(".myttrpg-apply-pool-btn").click(async (ev) => {
+        const key = ev.currentTarget.dataset.key;
+
+        if (key === "vitality") {
+          const newVal = Math.max(0, (actor.system.vitality?.value ?? 0) - damage);
+          await actor.update({ "system.vitality.value": newVal });
+
+        } else if (key.startsWith("pool:")) {
+          const idx = parseInt(key.split(":")[1]);
+          const updatedPools = actor.system.toObject().pools;
+          if (updatedPools[idx]) {
+            updatedPools[idx].value = Math.max(0, updatedPools[idx].value - damage);
+            await actor.update({ "system.pools": updatedPools });
+          }
+        }
+        d.close();
+      });
+    },
+    default: "cancel",
+  });
+  d.render(true);
+}
+
+// ─── Prototype world items ─────────────────────────────────────────────────────
 // Create prototype items the first time the GM loads the world.
 // Each entry is checked by name+type so it only gets created once.
 Hooks.once("ready", async () => {

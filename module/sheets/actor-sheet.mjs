@@ -264,9 +264,11 @@ export class MyTTRPGActorSheet extends foundry.appv1.sheets.ActorSheet {
     if (!item?.system?.damage) return;
 
     const roll = await new Roll(item.system.damage).evaluate();
+    // Store the total in flags so renderChatMessage can inject the Apply button.
     roll.toMessage({
       speaker: ChatMessage.getSpeaker({ actor: this.actor }),
       flavor:  `${item.name} — Damage`,
+      flags:   { myttrpg: { weaponDamageTotal: roll.total } },
     });
   }
 
