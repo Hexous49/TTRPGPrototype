@@ -25,7 +25,8 @@ Hooks.once("init", () => {
   };
 
   // Register sheets
-  Actors.registerSheet("myttrpg", MyTTRPGActorSheet, {
+  foundry.documents.collections.Actors.unregisterSheet("core", foundry.appv1.sheets.ActorSheet);
+  foundry.documents.collections.Actors.registerSheet("myttrpg", MyTTRPGActorSheet, {
     makeDefault: true,
     label: "MYTTRPG.SheetLabel.actor",
   });

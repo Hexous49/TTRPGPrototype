@@ -1,4 +1,4 @@
-<form class="myttrpg-actor-sheet" autocomplete="off">
+<form class="{{cssClass}} myttrpg-actor-sheet" autocomplete="off">
 
   {{!-- Header --}}
   <header class="myttrpg-sheet-header">
@@ -30,7 +30,7 @@
     <button type="button" class="myttrpg-btn" data-action="addPool">{{localize "MYTTRPG.Health.addPool"}}</button>
   </section>
 
-  {{!-- Character: Attributes --}}
+  {{!-- Character: Attributes + Biography --}}
   {{#if isCharacter}}
   <section class="myttrpg-section">
     <h2>{{localize "MYTTRPG.Section.attributes"}}</h2>
