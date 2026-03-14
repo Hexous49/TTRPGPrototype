@@ -30,6 +30,16 @@
     </div>
     {{/each}}
 
+    {{!-- Total: sum of all pool current and max values --}}
+    <div class="myttrpg-pool myttrpg-pool-total">
+      <span class="pool-label">{{labels.totalHealth}}</span>
+      <span class="pool-total-value">{{system.totalHealth.value}}</span>
+      <span class="pool-sep">/</span>
+      <span class="pool-max">{{system.totalHealth.max}}</span>
+      <span class="pool-btn-spacer"></span>
+      <span class="pool-btn-spacer"></span>
+    </div>
+
     <button type="button" class="myttrpg-btn add-pool">{{labels.addPool}}</button>
   </section>
 

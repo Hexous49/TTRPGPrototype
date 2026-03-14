@@ -23,9 +23,19 @@ export class MyTTRPGCharacterData extends foundry.abstract.TypeDataModel {
     };
   }
 
+  prepareDerivedData() {
+    // Sum vitality + all extra pools into a single totalHealth object.
+    // Stored directly on this (not in the schema) so it's runtime-only.
+    const allPools = [this.vitality, ...this.pools];
+    this.totalHealth = {
+      value: allPools.reduce((sum, p) => sum + (p.value ?? 0), 0),
+      max:   allPools.reduce((sum, p) => sum + (p.max   ?? 0), 0),
+    };
+  }
+
   static get trackableAttributes() {
     return {
-      bar: [["vitality", "value"]],
+      bar: [["totalHealth"], ["vitality"]],
       value: [
         ["attributes", "strength"],
         ["attributes", "agility"],
@@ -48,9 +58,17 @@ export class MyTTRPGNPCData extends foundry.abstract.TypeDataModel {
     };
   }
 
+  prepareDerivedData() {
+    const allPools = [this.vitality, ...this.pools];
+    this.totalHealth = {
+      value: allPools.reduce((sum, p) => sum + (p.value ?? 0), 0),
+      max:   allPools.reduce((sum, p) => sum + (p.max   ?? 0), 0),
+    };
+  }
+
   static get trackableAttributes() {
     return {
-      bar: [["vitality", "value"]],
+      bar: [["totalHealth"], ["vitality"]],
       value: [],
     };
   }

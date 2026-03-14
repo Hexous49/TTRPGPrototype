@@ -98,6 +98,27 @@
   cursor: pointer;
 }
 
+/* Total health summary row */
+.myttrpg-actor-sheet .myttrpg-pool-total {
+  border-top: 1px solid #ccc;
+  margin-top: 4px;
+  padding-top: 4px;
+  font-style: italic;
+}
+
+.myttrpg-actor-sheet .myttrpg-pool-total .pool-label {
+  font-weight: normal;
+}
+
+.myttrpg-actor-sheet .myttrpg-pool-total .pool-total-value {
+  display: inline-block;
+  width: 52px;
+  text-align: center;
+  flex: 0 0 auto;
+  font-weight: bold;
+  font-style: normal;
+}
+
 /* Invisible spacer used on Vitality row to align with pool rows that have a remove button */
 .myttrpg-actor-sheet .pool-btn-spacer {
   flex: 0 0 auto;

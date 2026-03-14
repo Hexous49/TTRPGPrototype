@@ -26,20 +26,28 @@ export class MyTTRPGActorSheet extends foundry.appv1.sheets.ActorSheet {
       addPool:           "Add Pool",
       editPool:          "Edit Pool",
       removePool:        "Remove Pool",
+      totalHealth:       "Total",
       strength:          "Strength",
       agility:           "Agility",
       intellect:         "Intellect",
       cr:                "CR",
     };
 
-    // Build a plain system object with null-safe values so number inputs never render empty
-    const sys = this.actor.system.toObject();
+    // Build a plain system object with null-safe values so number inputs never render empty.
+    // totalHealth is a derived value set in prepareDerivedData — it lives on the live system
+    // object but is NOT included in toObject(), so we read it separately.
+    const sys         = this.actor.system.toObject();
+    const totalHealth = this.actor.system.totalHealth ?? { value: 0, max: 0 };
     context.system = {
       vitality: {
         value: sys.vitality?.value  ?? 0,
         max:   sys.vitality?.max    ?? 0,
       },
       pools: sys.pools ?? [],
+      totalHealth: {
+        value: totalHealth.value ?? 0,
+        max:   totalHealth.max   ?? 0,
+      },
       attributes: {
         strength:  sys.attributes?.strength  ?? 10,
         agility:   sys.attributes?.agility   ?? 10,
