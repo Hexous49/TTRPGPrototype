@@ -1,6 +1,8 @@
-// Maps item type → { slotIdField, maxField }.
+// Maps item type → { slotIdField, maxField? }.
+// maxField is optional — omit it for items that don't add a health pool when equipped.
 // To add a new equippable type: add one entry here and nowhere else.
 const EQUIPMENT_SLOTS = {
+  weapon:          { slotIdField: "equippedWeaponId"                        },
   shieldGenerator: { slotIdField: "equippedShieldId", maxField: "shieldMax" },
   armor:           { slotIdField: "equippedArmorId",  maxField: "armorMax"  },
 };
@@ -46,6 +48,7 @@ export class MyTTRPGActorSheet extends foundry.appv1.sheets.ActorSheet {
       agility:             "Agility",
       intellect:           "Intellect",
       cr:                  "CR",
+      weaponSlot:          "Weapon",
       shieldGeneratorSlot: "Shield Generator",
       armorSlot:           "Armor",
       slotEmpty:           "Drop here to equip",
@@ -61,7 +64,13 @@ export class MyTTRPGActorSheet extends foundry.appv1.sheets.ActorSheet {
     const resolveEquipped = (id) => {
       if (!id) return null;
       const item = this.actor.items.get(id);
-      return item ? { id: item.id, name: item.name } : null;
+      if (!item) return null;
+      return {
+        id:     item.id,
+        name:   item.name,
+        damage: item.system.damage ?? null,
+        range:  item.system.range  ?? null,
+      };
     };
 
     // Inventory = every embedded item that is NOT filling an equipment slot
@@ -77,14 +86,15 @@ export class MyTTRPGActorSheet extends foundry.appv1.sheets.ActorSheet {
         const slotDef  = EQUIPMENT_SLOTS[item.type];
         // "Equip" is available when the item has a slot definition AND that slot is empty
         const canEquip    = !!(slotDef && !sys[slotDef.slotIdField]);
-        const healthMax   = slotDef ? (item.system[slotDef.maxField] ?? 0) : null;
-        const healthValue = slotDef ? (item.system.currentValue ?? healthMax) : null;
+        // Only items that add a health pool (maxField defined) show a health display
+        const healthMax   = slotDef?.maxField ? (item.system[slotDef.maxField] ?? 0) : null;
+        const healthValue = slotDef?.maxField ? (item.system.currentValue ?? healthMax) : null;
         return {
           id:          item.id,
           name:        item.name,
           typeName:    ITEM_TYPE_NAMES[item.type] ?? item.type,
           canEquip,
-          showHealth:  !!slotDef,
+          showHealth:  !!(slotDef?.maxField),
           healthValue,
           healthMax,
         };
@@ -100,6 +110,8 @@ export class MyTTRPGActorSheet extends foundry.appv1.sheets.ActorSheet {
         value: totalHealth.value ?? 0,
         max:   totalHealth.max   ?? 0,
       },
+      equippedWeaponId: sys.equippedWeaponId ?? "",
+      equippedWeapon:   resolveEquipped(sys.equippedWeaponId),
       equippedShieldId: sys.equippedShieldId ?? "",
       equippedShield:   resolveEquipped(sys.equippedShieldId),
       equippedArmorId:  sys.equippedArmorId  ?? "",
@@ -173,17 +185,18 @@ export class MyTTRPGActorSheet extends foundry.appv1.sheets.ActorSheet {
     if (!slotDef) return;
     if (this.actor.system[slotDef.slotIdField]) return; // slot already filled
 
-    // Use the item's persisted currentValue if it has one; otherwise start at full health (max).
-    const savedValue = item.system.currentValue ?? item.system[slotDef.maxField];
-    const pools = [
-      ...this.actor.system.toObject().pools,
-      { name: item.name, value: savedValue, max: item.system[slotDef.maxField], sourceItemId: item.id },
-    ];
+    const updates = { [`system.${slotDef.slotIdField}`]: item.id };
 
-    await this.actor.update({
-      [`system.${slotDef.slotIdField}`]: item.id,
-      "system.pools": pools,
-    });
+    if (slotDef.maxField) {
+      // Use the item's persisted currentValue if it has one; otherwise start at full health (max).
+      const savedValue = item.system.currentValue ?? item.system[slotDef.maxField];
+      updates["system.pools"] = [
+        ...this.actor.system.toObject().pools,
+        { name: item.name, value: savedValue, max: item.system[slotDef.maxField], sourceItemId: item.id },
+      ];
+    }
+
+    await this.actor.update(updates);
 
     this.render(false);
   }

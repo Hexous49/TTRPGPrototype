@@ -26,6 +26,7 @@ export class MyTTRPGCharacterData extends foundry.abstract.TypeDataModel {
       }),
       pools:            new fields.ArrayField(healthPoolSchema()),
       totalHealth:      totalHealthSchema(),
+      equippedWeaponId: new fields.StringField({ initial: "" }),
       equippedShieldId: new fields.StringField({ initial: "" }),
       equippedArmorId:  new fields.StringField({ initial: "" }),
       attributes: new fields.SchemaField({

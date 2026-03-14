@@ -39,6 +39,8 @@ Hooks.once("ready", async () => {
   if (!game.user?.isGM) return;
 
   const prototypeItems = [
+    { name: "Sword",                type: "weapon",          system: { damage: "4d6", range: "5ft"  } },
+    { name: "Rifle",                type: "weapon",          system: { damage: "3d6", range: "30ft" } },
     { name: "Shield Generator Mk1", type: "shieldGenerator", system: { shieldMax: 20 } },
     { name: "Light Armor",          type: "armor",           system: { armorMax: 10 } },
     { name: "Medium Armor",         type: "armor",           system: { armorMax: 25 } },

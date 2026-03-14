@@ -50,6 +50,18 @@
   <section class="myttrpg-section">
     <h2>{{labels.sectionEquipment}}</h2>
 
+    {{!-- Weapon slot --}}
+    <div class="myttrpg-equipment-slot{{#if system.equippedWeapon}} equipped{{/if}}">
+      <span class="slot-label">{{labels.weaponSlot}}</span>
+      {{#if system.equippedWeapon}}
+        <span class="slot-item-name">{{system.equippedWeapon.name}}</span>
+        <span class="slot-weapon-stats">{{system.equippedWeapon.damage}} · {{system.equippedWeapon.range}}</span>
+        <button type="button" class="myttrpg-btn-icon stow-btn" data-slot="equippedWeaponId" title="{{labels.stow}}">&#x2193;</button>
+      {{else}}
+        <span class="slot-empty">{{labels.slotEmpty}}</span>
+      {{/if}}
+    </div>
+
     {{!-- Armor slot --}}
     <div class="myttrpg-equipment-slot{{#if system.equippedArmor}} equipped{{/if}}">
       <span class="slot-label">{{labels.armorSlot}}</span>

@@ -172,6 +172,14 @@
   font-size: 0.85em;
 }
 
+/* Damage / range summary shown in the equipped weapon slot */
+.myttrpg-actor-sheet .myttrpg-equipment-slot .slot-weapon-stats {
+  flex: 0 0 auto;
+  font-size: 0.8em;
+  color: #666;
+  white-space: nowrap;
+}
+
 /* ---------- Inventory ---------- */
 .myttrpg-actor-sheet .myttrpg-inventory {
   display: flex;
