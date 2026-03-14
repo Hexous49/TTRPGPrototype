@@ -1,0 +1,9 @@
+{
+  "MYTTRPG.ActorTypes.character": "Character",
+  "MYTTRPG.ActorTypes.npc": "NPC",
+  "MYTTRPG.ItemTypes.weapon": "Weapon",
+  "MYTTRPG.ItemTypes.skill": "Skill",
+  "MYTTRPG.Attributes.strength": "Strength",
+  "MYTTRPG.Attributes.agility": "Agility",
+  "MYTTRPG.Attributes.intellect": "Intellect"
+}

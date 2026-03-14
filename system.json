@@ -1,0 +1,38 @@
+{
+  "id": "myttrpg",
+  "title": "My TTRPG",
+  "description": "An original TTRPG system prototype.",
+  "version": "0.1.0",
+  "compatibility": {
+    "minimum": "12",
+    "verified": "12"
+  },
+  "authors": [
+    {
+      "name": "Hexous49"
+    }
+  ],
+  "esmodules": ["myttrpg.mjs"],
+  "styles": ["styles/myttrpg.css"],
+  "languages": [
+    {
+      "lang": "en",
+      "name": "English",
+      "path": "lang/en.json"
+    }
+  ],
+  "documentTypes": {
+    "Actor": {
+      "character": {},
+      "npc": {}
+    },
+    "Item": {
+      "weapon": {},
+      "skill": {}
+    }
+  },
+  "socket": false,
+  "url": "",
+  "manifest": "",
+  "download": ""
+}
