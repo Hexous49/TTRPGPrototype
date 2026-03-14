@@ -56,6 +56,7 @@
       {{#if system.equippedWeapon}}
         <span class="slot-item-name">{{system.equippedWeapon.name}}</span>
         <span class="slot-weapon-stats">{{system.equippedWeapon.damage}} · {{system.equippedWeapon.range}}</span>
+        <button type="button" class="myttrpg-btn-icon roll-damage-btn" data-item-id="{{system.equippedWeapon.id}}" title="{{labels.rollDamage}}"><i class="fas fa-dice-d6"></i></button>
         <button type="button" class="myttrpg-btn-icon stow-btn" data-slot="equippedWeaponId" title="{{labels.stow}}">&#x2193;</button>
       {{else}}
         <span class="slot-empty">{{labels.slotEmpty}}</span>

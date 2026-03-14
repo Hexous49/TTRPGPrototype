@@ -49,6 +49,7 @@ export class MyTTRPGActorSheet extends foundry.appv1.sheets.ActorSheet {
       intellect:           "Intellect",
       cr:                  "CR",
       weaponSlot:          "Weapon",
+      rollDamage:          "Roll Damage",
       shieldGeneratorSlot: "Shield Generator",
       armorSlot:           "Armor",
       slotEmpty:           "Drop here to equip",
@@ -156,6 +157,11 @@ export class MyTTRPGActorSheet extends foundry.appv1.sheets.ActorSheet {
     html.find(".edit-pool").click((ev)   => this._onEditPool(ev));
     html.find(".remove-pool").click((ev) => this._onRemovePool(ev));
 
+    // Weapon slot: roll damage
+    html.find(".roll-damage-btn").click((ev) => {
+      this._onRollWeaponDamage(ev.currentTarget.dataset.itemId);
+    });
+
     // Equipment slot: stow button returns item to inventory without deleting it
     html.find(".stow-btn").click((ev) => {
       this._stowFromSlot(ev.currentTarget.dataset.slot);
@@ -249,6 +255,19 @@ export class MyTTRPGActorSheet extends foundry.appv1.sheets.ActorSheet {
     if (Object.keys(updates).length) await this.actor.update(updates);
     await item.delete();
     this.render(false);
+  }
+
+  // ─── Weapon: Roll damage ──────────────────────────────────────────────────
+
+  async _onRollWeaponDamage(itemId) {
+    const item = this.actor.items.get(itemId);
+    if (!item?.system?.damage) return;
+
+    const roll = await new Roll(item.system.damage).evaluate();
+    roll.toMessage({
+      speaker: ChatMessage.getSpeaker({ actor: this.actor }),
+      flavor:  `${item.name} — Damage`,
+    });
   }
 
   // ─── Health pools ─────────────────────────────────────────────────────────
