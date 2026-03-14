@@ -4,6 +4,7 @@ import {
   MyTTRPGNPCData,
   MyTTRPGWeaponData,
   MyTTRPGSkillData,
+  MyTTRPGShieldGeneratorData,
 } from "./module/data-models.mjs";
 import { MyTTRPGActorSheet } from "./module/sheets/actor-sheet.mjs";
 
@@ -16,12 +17,13 @@ Hooks.once("init", () => {
   // Register data models
   CONFIG.Actor.dataModels = {
     character: MyTTRPGCharacterData,
-    npc: MyTTRPGNPCData,
+    npc:       MyTTRPGNPCData,
   };
 
   CONFIG.Item.dataModels = {
-    weapon: MyTTRPGWeaponData,
-    skill: MyTTRPGSkillData,
+    weapon:         MyTTRPGWeaponData,
+    skill:          MyTTRPGSkillData,
+    shieldGenerator: MyTTRPGShieldGeneratorData,
   };
 
   // Register sheets
@@ -30,4 +32,21 @@ Hooks.once("init", () => {
     makeDefault: true,
     label: "MYTTRPG.SheetLabel.actor",
   });
+});
+
+// Create the Shield Generator Mk1 prototype item the first time the GM loads
+// the world.  Checks by name so it only runs once and survives reloads.
+Hooks.once("ready", async () => {
+  if (!game.user?.isGM) return;
+  const exists = game.items.find(
+    i => i.name === "Shield Generator Mk1" && i.type === "shieldGenerator"
+  );
+  if (!exists) {
+    await Item.create({
+      name: "Shield Generator Mk1",
+      type: "shieldGenerator",
+      system: { shieldMax: 20 },
+    });
+    console.log("myttrpg | Created world item: Shield Generator Mk1");
+  }
 });

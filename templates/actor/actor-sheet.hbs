@@ -30,7 +30,7 @@
     </div>
     {{/each}}
 
-    {{!-- Total: sum of all pool current and max values --}}
+    {{!-- Total: sum of vitality + all pools --}}
     <div class="myttrpg-pool myttrpg-pool-total">
       <span class="pool-label">{{labels.totalHealth}}</span>
       <span class="pool-total-value">{{system.totalHealth.value}}</span>
@@ -43,8 +43,24 @@
     <button type="button" class="myttrpg-btn add-pool">{{labels.addPool}}</button>
   </section>
 
-  {{!-- Character: Attributes + Biography --}}
+  {{!-- Character-only sections --}}
   {{#if isCharacter}}
+
+  {{!-- Equipment --}}
+  <section class="myttrpg-section">
+    <h2>{{labels.sectionEquipment}}</h2>
+    <div class="myttrpg-equipment-slot{{#if system.equippedShield}} equipped{{/if}}">
+      <span class="slot-label">{{labels.shieldGeneratorSlot}}</span>
+      {{#if system.equippedShield}}
+        <span class="slot-item-name">{{system.equippedShield.name}}</span>
+        <button type="button" class="myttrpg-btn-icon unequip-shield" title="{{labels.unequip}}">&#x2715;</button>
+      {{else}}
+        <span class="slot-empty">{{labels.slotEmpty}}</span>
+      {{/if}}
+    </div>
+  </section>
+
+  {{!-- Attributes --}}
   <section class="myttrpg-section">
     <h2>{{labels.sectionAttributes}}</h2>
     <div class="myttrpg-attributes">
@@ -63,10 +79,12 @@
     </div>
   </section>
 
+  {{!-- Biography --}}
   <section class="myttrpg-section">
     <h2>{{labels.sectionBiography}}</h2>
     <textarea name="system.biography" rows="6">{{system.biography}}</textarea>
   </section>
+
   {{/if}}
 
   {{!-- NPC-only fields --}}

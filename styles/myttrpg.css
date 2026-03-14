@@ -135,6 +135,43 @@
   cursor: pointer;
 }
 
+/* ---------- Equipment Slots ---------- */
+.myttrpg-actor-sheet .myttrpg-equipment-slot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 8px;
+  border: 1px dashed #999;
+  border-radius: 4px;
+  margin-bottom: 4px;
+  min-height: 30px;
+  background: rgba(0, 0, 0, 0.02);
+}
+
+/* Highlight when something is equipped */
+.myttrpg-actor-sheet .myttrpg-equipment-slot.equipped {
+  border-style: solid;
+  border-color: #7b6f5b;
+  background: rgba(123, 111, 91, 0.06);
+}
+
+.myttrpg-actor-sheet .myttrpg-equipment-slot .slot-label {
+  font-weight: bold;
+  min-width: 120px;
+  flex: 0 0 auto;
+}
+
+.myttrpg-actor-sheet .myttrpg-equipment-slot .slot-item-name {
+  flex: 1;
+}
+
+.myttrpg-actor-sheet .myttrpg-equipment-slot .slot-empty {
+  flex: 1;
+  color: #999;
+  font-style: italic;
+  font-size: 0.85em;
+}
+
 /* ---------- Attributes ---------- */
 .myttrpg-actor-sheet .myttrpg-attributes {
   display: flex;
