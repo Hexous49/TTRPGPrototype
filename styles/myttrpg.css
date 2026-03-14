@@ -128,9 +128,14 @@
   pointer-events: none;
 }
 
-/* Add Pool button */
-.myttrpg-actor-sheet .myttrpg-btn {
+/* Row that holds Add Pool + Reset All buttons */
+.myttrpg-actor-sheet .myttrpg-pool-actions {
+  display: flex;
+  gap: 6px;
   margin-top: 4px;
+}
+
+.myttrpg-actor-sheet .myttrpg-btn {
   padding: 2px 8px;
   cursor: pointer;
 }

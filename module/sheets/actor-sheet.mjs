@@ -41,6 +41,7 @@ export class MyTTRPGActorSheet extends foundry.appv1.sheets.ActorSheet {
       vitality:            "Vitality",
       poolName:            "Pool Name",
       addPool:             "Add Pool",
+      resetPools:          "Reset All",
       editPool:            "Edit Pool",
       removePool:          "Remove Pool",
       totalHealth:         "Total",
@@ -154,6 +155,7 @@ export class MyTTRPGActorSheet extends foundry.appv1.sheets.ActorSheet {
 
     // Health pools
     html.find(".add-pool").click((ev)    => this._onAddPool(ev));
+    html.find(".reset-pools").click((ev) => this._onResetPools(ev));
     html.find(".edit-pool").click((ev)   => this._onEditPool(ev));
     html.find(".remove-pool").click((ev) => this._onRemovePool(ev));
 
@@ -273,6 +275,16 @@ export class MyTTRPGActorSheet extends foundry.appv1.sheets.ActorSheet {
   }
 
   // ─── Health pools ─────────────────────────────────────────────────────────
+
+  async _onResetPools(ev) {
+    const sys = this.actor.system.toObject();
+    const resetPools = sys.pools.map(p => ({ ...p, value: p.max }));
+    await this.actor.update({
+      "system.vitality.value": sys.vitality.max,
+      "system.pools":          resetPools,
+    });
+    this.render(false);
+  }
 
   _onAddPool(ev) {
     new Dialog({
