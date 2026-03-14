@@ -80,16 +80,15 @@ function myttrpgOpenApplyDialog(damage) {
   ];
 
   const rows = pools.map(p => `
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
-      <span style="flex:1;font-weight:bold;">${p.label}</span>
-      <span style="min-width:64px;text-align:right;color:#555;">${p.value} / ${p.max}</span>
-      <button type="button" class="myttrpg-apply-pool-btn" data-key="${p.key}"
-              style="flex:0 0 auto;padding:1px 8px;cursor:pointer;">Apply</button>
+    <div class="myttrpg-damage-row">
+      <span class="myttrpg-damage-pool-name">${p.label}</span>
+      <span class="myttrpg-damage-pool-value">${p.value} / ${p.max}</span>
+      <button type="button" class="myttrpg-apply-pool-btn" data-key="${p.key}">Apply</button>
     </div>`).join("");
 
   const d = new Dialog({
     title: `Apply ${damage} Damage — ${actor.name}`,
-    content: `<form style="padding:4px 2px;">${rows}</form>`,
+    content: `<form class="myttrpg-damage-dialog">${rows}</form>`,
     buttons: {
       cancel: { icon: '<i class="fas fa-times"></i>', label: "Cancel" },
     },
