@@ -91,6 +91,15 @@ Hooks.on("updateCombat", async (combat, changes, _options, _userId) => {
     // Clamp at the last entry — position stays there until damage resets it to 0.
     rawPools[idx].rechargePosition = Math.min(pos + 1, track.length - 1);
     await actor.update({ "system.pools": rawPools });
+
+    // Post a chat message only when the shield actually gained points.
+    if (amount > 0) {
+      const newValue = rawPools[idx].value;
+      ChatMessage.create({
+        speaker: ChatMessage.getSpeaker({ actor }),
+        content: `<strong>${pool.name}</strong> recharged by <strong>+${amount}</strong> (${newValue} / ${pool.max})`,
+      });
+    }
   }
 });
 
