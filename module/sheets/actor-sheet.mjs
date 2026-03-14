@@ -6,6 +6,8 @@ export class MyTTRPGActorSheet extends foundry.appv1.sheets.ActorSheet {
       width: 620,
       height: 560,
       resizable: true,
+      submitOnChange: true,
+      closeOnSubmit: false,
     });
   }
 
@@ -28,6 +30,10 @@ export class MyTTRPGActorSheet extends foundry.appv1.sheets.ActorSheet {
       cr:                 game.i18n.localize("MYTTRPG.NPC.cr"),
     };
     return context;
+  }
+
+  async _updateObject(event, formData) {
+    return this.actor.update(formData);
   }
 
   activateListeners(html) {
