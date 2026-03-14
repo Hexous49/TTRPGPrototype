@@ -210,6 +210,16 @@
   white-space: nowrap;
 }
 
+/* Current / max health shown for equippable items in inventory */
+.myttrpg-actor-sheet .myttrpg-inventory-item .inv-item-health {
+  flex: 0 0 auto;
+  font-size: 0.8em;
+  color: #555;
+  white-space: nowrap;
+  min-width: 48px;
+  text-align: right;
+}
+
 /* Persistent drop hint shown below item list at all times */
 .myttrpg-actor-sheet .inv-drop-hint {
   margin: 4px 0 0 0;

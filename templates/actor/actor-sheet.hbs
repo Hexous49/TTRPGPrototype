@@ -82,6 +82,9 @@
         <div class="myttrpg-inventory-item">
           <span class="inv-item-name">{{name}}</span>
           <span class="inv-item-type">{{typeName}}</span>
+          {{#if showHealth}}
+            <span class="inv-item-health">{{healthValue}} / {{healthMax}}</span>
+          {{/if}}
           {{#if canEquip}}
             <button type="button" class="myttrpg-btn-icon equip-item-btn" data-item-id="{{id}}" title="{{../labels.equip}}">&#x2191;</button>
           {{else}}

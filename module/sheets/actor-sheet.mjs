@@ -76,12 +76,17 @@ export class MyTTRPGActorSheet extends foundry.appv1.sheets.ActorSheet {
       .map(item => {
         const slotDef  = EQUIPMENT_SLOTS[item.type];
         // "Equip" is available when the item has a slot definition AND that slot is empty
-        const canEquip = !!(slotDef && !sys[slotDef.slotIdField]);
+        const canEquip    = !!(slotDef && !sys[slotDef.slotIdField]);
+        const healthMax   = slotDef ? (item.system[slotDef.maxField] ?? 0) : null;
+        const healthValue = slotDef ? (item.system.currentValue ?? healthMax) : null;
         return {
-          id:       item.id,
-          name:     item.name,
-          typeName: ITEM_TYPE_NAMES[item.type] ?? item.type,
+          id:          item.id,
+          name:        item.name,
+          typeName:    ITEM_TYPE_NAMES[item.type] ?? item.type,
           canEquip,
+          showHealth:  !!slotDef,
+          healthValue,
+          healthMax,
         };
       });
 
