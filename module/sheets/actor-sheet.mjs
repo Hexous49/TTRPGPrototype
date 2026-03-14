@@ -55,6 +55,7 @@ export class MyTTRPGActorSheet extends foundry.appv1.sheets.ActorSheet {
             const max = parseInt(html.find('[name="max"]').val()) || 0;
             const pools = [...this.actor.system.toObject().pools, { name, value, max }];
             await this.actor.update({ "system.pools": pools });
+            this.render(false);
           },
         },
         cancel: {
@@ -70,5 +71,6 @@ export class MyTTRPGActorSheet extends foundry.appv1.sheets.ActorSheet {
     const index = Number(ev.currentTarget.dataset.index);
     const pools = this.actor.system.toObject().pools.filter((_, i) => i !== index);
     await this.actor.update({ "system.pools": pools });
+    this.render(false);
   }
 }
