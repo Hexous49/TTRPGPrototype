@@ -33,6 +33,19 @@ Hooks.once("init", () => {
   });
 });
 
+// ─── Dead condition ───────────────────────────────────────────────────────────
+// Apply / remove Foundry's built-in "dead" status when Vitality hits 0.
+// Only the GM runs this to avoid duplicate effect creation on multi-client games.
+
+Hooks.on("updateActor", (actor, changes, _options, _userId) => {
+  if (!game.user.isGM) return;
+
+  const newVitality = changes.system?.vitality?.value;
+  if (newVitality == null) return;                  // vitality wasn't part of this update
+
+  actor.toggleStatusEffect("dead", { active: newVitality <= 0 });
+});
+
 // ─── Chat: Apply Damage button ────────────────────────────────────────────────
 // Any chat message that has flags.myttrpg.weaponDamageTotal gets an
 // "Apply N Damage" button injected below the roll.  Clicking it opens a
