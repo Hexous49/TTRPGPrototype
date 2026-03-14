@@ -33,6 +33,33 @@ Hooks.once("init", () => {
   });
 });
 
+// ─── Shield regen at start of each combat round ───────────────────────────────
+// When the round number advances, recharge every combatant's shield pool by 1
+// (up to its max) if they have a shield equipped.
+
+Hooks.on("updateCombat", async (combat, changes, _options, _userId) => {
+  if (!game.user.isGM) return;
+  if (changes.round == null) return;   // only round transitions, not turn changes
+
+  for (const combatant of combat.combatants) {
+    const actor = combatant.actor;
+    if (!actor?.system) continue;
+
+    const equippedShieldId = actor.system.equippedShieldId;
+    if (!equippedShieldId) continue;   // no shield equipped
+
+    const rawPools = actor.system.toObject().pools;
+    const idx = rawPools.findIndex(p => p.sourceItemId === equippedShieldId);
+    if (idx === -1) continue;          // shield has no pool (shouldn't happen)
+
+    const pool = rawPools[idx];
+    if (pool.value >= pool.max) continue; // already full
+
+    rawPools[idx].value = pool.value + 1;
+    await actor.update({ "system.pools": rawPools });
+  }
+});
+
 // ─── Dead condition ───────────────────────────────────────────────────────────
 // Apply / remove Foundry's built-in "dead" status when Vitality hits 0.
 // Only the GM runs this to avoid duplicate effect creation on multi-client games.
