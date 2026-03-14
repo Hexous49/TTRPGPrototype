@@ -15,6 +15,17 @@ export class MyTTRPGCharacterData extends foundry.abstract.TypeDataModel {
       biography: new fields.HTMLField(),
     };
   }
+
+  static get trackableAttributes() {
+    return {
+      bar: [["health", "value"]],
+      value: [
+        ["attributes", "strength"],
+        ["attributes", "agility"],
+        ["attributes", "intellect"],
+      ],
+    };
+  }
 }
 
 export class MyTTRPGNPCData extends foundry.abstract.TypeDataModel {
@@ -26,6 +37,13 @@ export class MyTTRPGNPCData extends foundry.abstract.TypeDataModel {
       }),
       cr: new fields.NumberField({ required: true, min: 0, initial: 1 }),
       notes: new fields.HTMLField(),
+    };
+  }
+
+  static get trackableAttributes() {
+    return {
+      bar: [["health", "value"]],
+      value: [],
     };
   }
 }

@@ -23,12 +23,20 @@
   ],
   "documentTypes": {
     "Actor": {
-      "character": {},
-      "npc": {}
+      "character": {
+        "htmlFields": ["biography"]
+      },
+      "npc": {
+        "htmlFields": ["notes"]
+      }
     },
     "Item": {
-      "weapon": {},
-      "skill": {}
+      "weapon": {
+        "htmlFields": ["description"]
+      },
+      "skill": {
+        "htmlFields": ["description"]
+      }
     }
   },
   "socket": false,
