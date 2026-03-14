@@ -72,9 +72,13 @@
   flex: 0 0 auto;
 }
 
-/* Editable name input on dynamic pools (same width as label) */
-.myttrpg-actor-sheet .myttrpg-pool input[type="text"].pool-label {
-  font-weight: normal;
+/* Read-only max value display */
+.myttrpg-actor-sheet .myttrpg-pool .pool-max {
+  display: inline-block;
+  width: 52px;
+  text-align: center;
+  flex: 0 0 auto;
+  color: #555;
 }
 
 .myttrpg-actor-sheet .myttrpg-pool .pool-sep {

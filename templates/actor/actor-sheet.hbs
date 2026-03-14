@@ -14,15 +14,17 @@
       <span class="pool-label">{{labels.vitality}}</span>
       <input type="number" name="system.vitality.value" value="{{system.vitality.value}}" min="0">
       <span class="pool-sep">/</span>
-      <input type="number" name="system.vitality.max" value="{{system.vitality.max}}" min="0">
+      <span class="pool-max">{{system.vitality.max}}</span>
+      <button type="button" class="myttrpg-btn-icon edit-pool" data-type="vitality" title="{{labels.editPool}}">&#9998;</button>
     </div>
 
     {{#each system.pools}}
     <div class="myttrpg-pool">
-      <input type="text" class="pool-label" name="system.pools.{{@index}}.name" value="{{name}}" placeholder="{{../labels.poolName}}">
+      <span class="pool-label">{{name}}</span>
       <input type="number" name="system.pools.{{@index}}.value" value="{{value}}" min="0">
       <span class="pool-sep">/</span>
-      <input type="number" name="system.pools.{{@index}}.max" value="{{max}}" min="0">
+      <span class="pool-max">{{max}}</span>
+      <button type="button" class="myttrpg-btn-icon edit-pool" data-index="{{@index}}" title="{{../labels.editPool}}">&#9998;</button>
       <button type="button" class="myttrpg-btn-icon remove-pool" data-index="{{@index}}" title="{{../labels.removePool}}">&#x2715;</button>
     </div>
     {{/each}}

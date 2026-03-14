@@ -24,6 +24,7 @@ export class MyTTRPGActorSheet extends foundry.appv1.sheets.ActorSheet {
       vitality:          "Vitality",
       poolName:          "Pool Name",
       addPool:           "Add Pool",
+      editPool:          "Edit Pool",
       removePool:        "Remove Pool",
       strength:          "Strength",
       agility:           "Agility",
@@ -55,9 +56,16 @@ export class MyTTRPGActorSheet extends foundry.appv1.sheets.ActorSheet {
   async _updateObject(event, formData) {
     const expanded = foundry.utils.expandObject(formData);
 
-    // expandObject leaves numeric-keyed children as objects — convert pools to array
+    // expandObject leaves numeric-keyed children as objects — convert pools to array.
+    // The form only submits `value` for each pool (name and max are now read-only spans),
+    // so we merge the incoming form data into the existing pool records to preserve name and max.
     if (expanded.system?.pools && !Array.isArray(expanded.system.pools)) {
-      expanded.system.pools = Object.values(expanded.system.pools);
+      const existing = this.actor.system.toObject().pools;
+      const incoming = Object.values(expanded.system.pools);
+      expanded.system.pools = existing.map((pool, i) => ({
+        ...pool,
+        ...(incoming[i] ?? {}),
+      }));
     }
 
     return this.actor.update(expanded);
@@ -71,6 +79,7 @@ export class MyTTRPGActorSheet extends foundry.appv1.sheets.ActorSheet {
     html.find("input, textarea, select").change((ev) => this._onSubmit(ev));
 
     html.find(".add-pool").click((ev) => this._onAddPool(ev));
+    html.find(".edit-pool").click((ev) => this._onEditPool(ev));
     html.find(".remove-pool").click((ev) => this._onRemovePool(ev));
   }
 
@@ -115,6 +124,84 @@ export class MyTTRPGActorSheet extends foundry.appv1.sheets.ActorSheet {
       },
       default: "create",
     }).render(true);
+  }
+
+  _onEditPool(ev) {
+    const btn = ev.currentTarget;
+    const isVitality = btn.dataset.type === "vitality";
+
+    if (isVitality) {
+      const currentMax = this.actor.system.toObject().vitality.max;
+      const content = `
+        <form>
+          <div class="form-group">
+            <label>Max</label>
+            <input type="number" name="max" value="${currentMax}" min="0">
+          </div>
+        </form>
+      `;
+
+      new Dialog({
+        title: "Edit Vitality",
+        content,
+        buttons: {
+          save: {
+            icon: '<i class="fas fa-check"></i>',
+            label: "Save",
+            callback: async (html) => {
+              const max = parseInt(html.find('[name="max"]').val()) || 0;
+              await this.actor.update({ "system.vitality.max": max });
+              this.render(false);
+            },
+          },
+          cancel: {
+            icon: '<i class="fas fa-times"></i>',
+            label: "Cancel",
+          },
+        },
+        default: "save",
+      }).render(true);
+
+    } else {
+      const index = Number(btn.dataset.index);
+      const pool  = this.actor.system.toObject().pools[index];
+      const content = `
+        <form>
+          <div class="form-group">
+            <label>Pool Name</label>
+            <input type="text" name="name" value="${pool.name}" placeholder="Pool Name">
+          </div>
+          <div class="form-group">
+            <label>Max</label>
+            <input type="number" name="max" value="${pool.max}" min="0">
+          </div>
+        </form>
+      `;
+
+      new Dialog({
+        title: "Edit Pool",
+        content,
+        buttons: {
+          save: {
+            icon: '<i class="fas fa-check"></i>',
+            label: "Save",
+            callback: async (html) => {
+              const name = html.find('[name="name"]').val().trim() || pool.name;
+              const max  = parseInt(html.find('[name="max"]').val()) || 0;
+              const pools = this.actor.system.toObject().pools;
+              pools[index] = { ...pools[index], name, max };
+              await this.actor.update({ "system.pools": pools });
+              this.render(false);
+            },
+          },
+          cancel: {
+            icon: '<i class="fas fa-times"></i>',
+            label: "Cancel",
+          },
+        },
+        default: "save",
+      }).render(true);
+    }
   }
 
   async _onRemovePool(ev) {
