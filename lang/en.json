@@ -3,6 +3,11 @@
   "MYTTRPG.ActorTypes.npc": "NPC",
   "MYTTRPG.ItemTypes.weapon": "Weapon",
   "MYTTRPG.ItemTypes.skill": "Skill",
+  "MYTTRPG.SheetLabel.actor": "My TTRPG Actor Sheet",
+  "MYTTRPG.Section.health": "Health",
+  "MYTTRPG.Section.attributes": "Attributes",
+  "MYTTRPG.Section.biography": "Biography",
+  "MYTTRPG.Section.notes": "Notes",
   "MYTTRPG.Attributes.strength": "Strength",
   "MYTTRPG.Attributes.agility": "Agility",
   "MYTTRPG.Attributes.intellect": "Intellect",
@@ -11,5 +16,6 @@
   "MYTTRPG.Health.pool.value": "Current",
   "MYTTRPG.Health.pool.max": "Max",
   "MYTTRPG.Health.addPool": "Add Pool",
-  "MYTTRPG.Health.removePool": "Remove Pool"
+  "MYTTRPG.Health.removePool": "Remove Pool",
+  "MYTTRPG.NPC.cr": "CR"
 }

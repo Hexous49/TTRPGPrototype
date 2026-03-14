@@ -1,0 +1,72 @@
+<form class="myttrpg-actor-sheet" autocomplete="off">
+
+  {{!-- Header --}}
+  <header class="myttrpg-sheet-header">
+    <img class="myttrpg-actor-portrait" src="{{actor.img}}" data-edit="img" title="{{actor.name}}">
+    <h1><input name="name" type="text" value="{{actor.name}}" placeholder="Name"></h1>
+  </header>
+
+  {{!-- Health Pools --}}
+  <section class="myttrpg-section">
+    <h2>{{localize "MYTTRPG.Section.health"}}</h2>
+
+    <div class="myttrpg-pool">
+      <span class="pool-label">{{localize "MYTTRPG.Health.vitality"}}</span>
+      <input type="number" name="system.vitality.value" value="{{system.vitality.value}}" min="0">
+      <span class="pool-sep">/</span>
+      <input type="number" name="system.vitality.max" value="{{system.vitality.max}}" min="0">
+    </div>
+
+    {{#each system.pools}}
+    <div class="myttrpg-pool">
+      <input type="text" class="pool-label" name="system.pools.{{@index}}.name" value="{{name}}" placeholder="{{localize 'MYTTRPG.Health.pool.name'}}">
+      <input type="number" name="system.pools.{{@index}}.value" value="{{value}}" min="0">
+      <span class="pool-sep">/</span>
+      <input type="number" name="system.pools.{{@index}}.max" value="{{max}}" min="0">
+      <button type="button" class="myttrpg-btn-icon" data-action="removePool" data-index="{{@index}}" title="{{localize 'MYTTRPG.Health.removePool'}}">&#x2715;</button>
+    </div>
+    {{/each}}
+
+    <button type="button" class="myttrpg-btn" data-action="addPool">{{localize "MYTTRPG.Health.addPool"}}</button>
+  </section>
+
+  {{!-- Character: Attributes --}}
+  {{#if isCharacter}}
+  <section class="myttrpg-section">
+    <h2>{{localize "MYTTRPG.Section.attributes"}}</h2>
+    <div class="myttrpg-attributes">
+      <div class="myttrpg-attribute">
+        <label>{{localize "MYTTRPG.Attributes.strength"}}</label>
+        <input type="number" name="system.attributes.strength" value="{{system.attributes.strength}}" min="1" max="20">
+      </div>
+      <div class="myttrpg-attribute">
+        <label>{{localize "MYTTRPG.Attributes.agility"}}</label>
+        <input type="number" name="system.attributes.agility" value="{{system.attributes.agility}}" min="1" max="20">
+      </div>
+      <div class="myttrpg-attribute">
+        <label>{{localize "MYTTRPG.Attributes.intellect"}}</label>
+        <input type="number" name="system.attributes.intellect" value="{{system.attributes.intellect}}" min="1" max="20">
+      </div>
+    </div>
+  </section>
+
+  <section class="myttrpg-section">
+    <h2>{{localize "MYTTRPG.Section.biography"}}</h2>
+    <textarea name="system.biography" rows="6">{{system.biography}}</textarea>
+  </section>
+  {{/if}}
+
+  {{!-- NPC-only fields --}}
+  {{#if isNPC}}
+  <section class="myttrpg-section myttrpg-inline">
+    <label>{{localize "MYTTRPG.NPC.cr"}}</label>
+    <input type="number" name="system.cr" value="{{system.cr}}" min="0">
+  </section>
+
+  <section class="myttrpg-section">
+    <h2>{{localize "MYTTRPG.Section.notes"}}</h2>
+    <textarea name="system.notes" rows="6">{{system.notes}}</textarea>
+  </section>
+  {{/if}}
+
+</form>

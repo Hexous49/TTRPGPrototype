@@ -5,6 +5,7 @@ import {
   MyTTRPGWeaponData,
   MyTTRPGSkillData,
 } from "./module/data-models.mjs";
+import { MyTTRPGActorSheet } from "./module/sheets/actor-sheet.mjs";
 
 Hooks.once("init", () => {
   console.log("myttrpg | Initializing My TTRPG System");
@@ -22,4 +23,10 @@ Hooks.once("init", () => {
     weapon: MyTTRPGWeaponData,
     skill: MyTTRPGSkillData,
   };
+
+  // Register sheets
+  Actors.registerSheet("myttrpg", MyTTRPGActorSheet, {
+    makeDefault: true,
+    label: "MYTTRPG.SheetLabel.actor",
+  });
 });
