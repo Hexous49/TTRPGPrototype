@@ -113,10 +113,11 @@ export class MyTTRPGShieldGeneratorData extends foundry.abstract.TypeDataModel {
       shieldMax:     new fields.NumberField({ required: true, nullable: false, integer: true, min: 0, initial: 10 }),
       // null means "full health" — a stored number persists damage across equip/stow cycles
       currentValue:  new fields.NumberField({ nullable: true, integer: true, min: 0, initial: null }),
-      // Ordered list of regen amounts applied on successive rounds (loops when exhausted).
-      // e.g. [1, 2, 3, 4] → round 1 regen = 1, round 2 = 2, round 3 = 3, round 4 = 4, then wraps.
+      // Ordered list of regen amounts applied on successive rounds.
+      // 0 is valid — it means "no regen this round but the track still advances".
+      // e.g. [0, 0, 1, 2] or [1, 3, 5, 7, 8] are both legal.
       rechargeTrack: new fields.ArrayField(
-        new fields.NumberField({ required: true, nullable: false, integer: true, min: 1, initial: 1 }),
+        new fields.NumberField({ required: true, nullable: false, integer: true, min: 0, initial: 1 }),
         { initial: [1] }
       ),
       description:   new fields.HTMLField(),
