@@ -3,10 +3,13 @@ const { fields } = foundry.data;
 // sourceItemId marks a pool as being owned by an embedded item so it can
 // be cleaned up automatically when the item is unequipped.
 const healthPoolSchema = () => new fields.SchemaField({
-  name:         new fields.StringField({ required: true, initial: "" }),
-  value:        new fields.NumberField({ required: true, nullable: false, integer: true, min: 0, initial: 0 }),
-  max:          new fields.NumberField({ required: true, nullable: false, integer: true, min: 0, initial: 0 }),
-  sourceItemId: new fields.StringField({ initial: "" }),
+  name:             new fields.StringField({ required: true, initial: "" }),
+  value:            new fields.NumberField({ required: true, nullable: false, integer: true, min: 0, initial: 0 }),
+  max:              new fields.NumberField({ required: true, nullable: false, integer: true, min: 0, initial: 0 }),
+  sourceItemId:     new fields.StringField({ initial: "" }),
+  // Tracks current position in the shield item's rechargeTrack array.
+  // Advances each round when regen fires; resets to 0 when the pool takes damage.
+  rechargePosition: new fields.NumberField({ integer: true, min: 0, initial: 0 }),
 });
 
 // totalHealth must live in the schema so Foundry's schema-walker can expose it
@@ -107,10 +110,16 @@ export class MyTTRPGSkillData extends foundry.abstract.TypeDataModel {
 export class MyTTRPGShieldGeneratorData extends foundry.abstract.TypeDataModel {
   static defineSchema() {
     return {
-      shieldMax:    new fields.NumberField({ required: true, nullable: false, integer: true, min: 0, initial: 10 }),
+      shieldMax:     new fields.NumberField({ required: true, nullable: false, integer: true, min: 0, initial: 10 }),
       // null means "full health" — a stored number persists damage across equip/stow cycles
-      currentValue: new fields.NumberField({ nullable: true, integer: true, min: 0, initial: null }),
-      description:  new fields.HTMLField(),
+      currentValue:  new fields.NumberField({ nullable: true, integer: true, min: 0, initial: null }),
+      // Ordered list of regen amounts applied on successive rounds (loops when exhausted).
+      // e.g. [1, 2, 3, 4] → round 1 regen = 1, round 2 = 2, round 3 = 3, round 4 = 4, then wraps.
+      rechargeTrack: new fields.ArrayField(
+        new fields.NumberField({ required: true, nullable: false, integer: true, min: 1, initial: 1 }),
+        { initial: [1] }
+      ),
+      description:   new fields.HTMLField(),
     };
   }
 }

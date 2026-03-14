@@ -33,9 +33,33 @@ Hooks.once("init", () => {
   });
 });
 
-// ─── Shield regen at start of each combat round ───────────────────────────────
-// When the round number advances, recharge every combatant's shield pool by 1
-// (up to its max) if they have a shield equipped.
+// ─── Shield recharge track ────────────────────────────────────────────────────
+// Each Shield Generator item has a rechargeTrack array, e.g. [1, 2, 3, 4].
+// The pool stores a rechargePosition pointer that advances each round when
+// regen fires and resets to 0 whenever the pool takes damage.
+//
+// combatStart  → reset every combatant's shield pool to position 0.
+// updateCombat → each round transition, recharge by track[position] then advance.
+// preUpdateActor → if a pool's value decreases (damage taken), reset position to 0.
+
+Hooks.on("combatStart", async (combat, _options) => {
+  if (!game.user.isGM) return;
+
+  for (const combatant of combat.combatants) {
+    const actor = combatant.actor;
+    if (!actor?.system) continue;
+
+    const equippedShieldId = actor.system.equippedShieldId;
+    if (!equippedShieldId) continue;
+
+    const rawPools = actor.system.toObject().pools;
+    const idx = rawPools.findIndex(p => p.sourceItemId === equippedShieldId);
+    if (idx === -1) continue;
+
+    rawPools[idx].rechargePosition = 0;
+    await actor.update({ "system.pools": rawPools });
+  }
+});
 
 Hooks.on("updateCombat", async (combat, changes, _options, _userId) => {
   if (!game.user.isGM) return;
@@ -53,10 +77,43 @@ Hooks.on("updateCombat", async (combat, changes, _options, _userId) => {
     if (idx === -1) continue;          // shield has no pool (shouldn't happen)
 
     const pool = rawPools[idx];
-    if (pool.value >= pool.max) continue; // already full
+    if (pool.value >= pool.max) continue; // already full — no regen, track stays put
 
-    rawPools[idx].value = pool.value + 1;
+    // Look up the recharge track from the equipped item.
+    const shieldItem = actor.items.get(equippedShieldId);
+    const track = shieldItem?.system?.rechargeTrack;
+    if (!track?.length) continue;      // item has no track defined
+
+    const pos    = pool.rechargePosition ?? 0;
+    const amount = track[pos] ?? track[0];
+
+    rawPools[idx].value            = Math.min(pool.max, pool.value + amount);
+    rawPools[idx].rechargePosition = (pos + 1) % track.length;
     await actor.update({ "system.pools": rawPools });
+  }
+});
+
+// ─── Reset recharge position when a shield pool takes damage ─────────────────
+// preUpdateActor fires before the write; we mutate changes.system.pools in place
+// so the reset travels in the same update, keeping things atomic.
+
+Hooks.on("preUpdateActor", (actor, changes, _options, _userId) => {
+  if (!game.user.isGM) return;
+  if (!Array.isArray(changes.system?.pools)) return;
+
+  const equippedShieldId = actor.system.equippedShieldId;
+  if (!equippedShieldId) return;
+
+  const currentPools = actor.system.toObject().pools;
+  const shieldIdx    = currentPools.findIndex(p => p.sourceItemId === equippedShieldId);
+  if (shieldIdx === -1) return;
+  if (changes.system.pools[shieldIdx] === undefined) return;
+
+  const oldValue = currentPools[shieldIdx].value;
+  const newValue = changes.system.pools[shieldIdx].value;
+
+  if (newValue !== undefined && newValue < oldValue) {
+    changes.system.pools[shieldIdx].rechargePosition = 0;
   }
 });
 
@@ -166,6 +223,15 @@ function myttrpgOpenApplyDialog(damage, actor = null) {
             const absorbed = Math.min(current, damage);
             remaining = damage - absorbed;
             rawPools[idx].value = current - absorbed;
+
+            // If this is the equipped shield pool and it actually absorbed damage,
+            // reset the recharge track back to position 0.
+            if (absorbed > 0
+                && rawPools[idx].sourceItemId
+                && rawPools[idx].sourceItemId === actor.system.equippedShieldId) {
+              rawPools[idx].rechargePosition = 0;
+            }
+
             await actor.update({ "system.pools": rawPools });
           }
         }
@@ -189,7 +255,7 @@ Hooks.once("ready", async () => {
   const prototypeItems = [
     { name: "Sword",                type: "weapon",          system: { damage: "4d6", range: "5ft"  } },
     { name: "Rifle",                type: "weapon",          system: { damage: "3d6", range: "30ft" } },
-    { name: "Shield Generator Mk1", type: "shieldGenerator", system: { shieldMax: 20 } },
+    { name: "Shield Generator Mk1", type: "shieldGenerator", system: { shieldMax: 20, rechargeTrack: [1, 2, 3, 4] } },
     { name: "Light Armor",          type: "armor",           system: { armorMax: 10 } },
     { name: "Medium Armor",         type: "armor",           system: { armorMax: 25 } },
     { name: "Heavy Armor",          type: "armor",           system: { armorMax: 40 } },
