@@ -8,10 +8,10 @@
 
   {{!-- Health Pools --}}
   <section class="myttrpg-section">
-    <h2>{{localize "MYTTRPG.Section.health"}}</h2>
+    <h2>{{labels.sectionHealth}}</h2>
 
     <div class="myttrpg-pool">
-      <span class="pool-label">{{localize "MYTTRPG.Health.vitality"}}</span>
+      <span class="pool-label">{{labels.vitality}}</span>
       <input type="number" name="system.vitality.value" value="{{system.vitality.value}}" min="0">
       <span class="pool-sep">/</span>
       <input type="number" name="system.vitality.max" value="{{system.vitality.max}}" min="0">
@@ -19,39 +19,39 @@
 
     {{#each system.pools}}
     <div class="myttrpg-pool">
-      <input type="text" class="pool-label" name="system.pools.{{@index}}.name" value="{{name}}" placeholder="{{localize 'MYTTRPG.Health.pool.name'}}">
+      <input type="text" class="pool-label" name="system.pools.{{@index}}.name" value="{{name}}" placeholder="{{../labels.poolName}}">
       <input type="number" name="system.pools.{{@index}}.value" value="{{value}}" min="0">
       <span class="pool-sep">/</span>
       <input type="number" name="system.pools.{{@index}}.max" value="{{max}}" min="0">
-        <button type="button" class="myttrpg-btn-icon remove-pool" data-index="{{@index}}" title="{{localize 'MYTTRPG.Health.removePool'}}">&#x2715;</button>
+      <button type="button" class="myttrpg-btn-icon remove-pool" data-index="{{@index}}" title="{{../labels.removePool}}">&#x2715;</button>
     </div>
     {{/each}}
 
-    <button type="button" class="myttrpg-btn add-pool">{{localize "MYTTRPG.Health.addPool"}}</button>
+    <button type="button" class="myttrpg-btn add-pool">{{labels.addPool}}</button>
   </section>
 
   {{!-- Character: Attributes + Biography --}}
   {{#if isCharacter}}
   <section class="myttrpg-section">
-    <h2>{{localize "MYTTRPG.Section.attributes"}}</h2>
+    <h2>{{labels.sectionAttributes}}</h2>
     <div class="myttrpg-attributes">
       <div class="myttrpg-attribute">
-        <label>{{localize "MYTTRPG.Attributes.strength"}}</label>
+        <label>{{labels.strength}}</label>
         <input type="number" name="system.attributes.strength" value="{{system.attributes.strength}}" min="1" max="20">
       </div>
       <div class="myttrpg-attribute">
-        <label>{{localize "MYTTRPG.Attributes.agility"}}</label>
+        <label>{{labels.agility}}</label>
         <input type="number" name="system.attributes.agility" value="{{system.attributes.agility}}" min="1" max="20">
       </div>
       <div class="myttrpg-attribute">
-        <label>{{localize "MYTTRPG.Attributes.intellect"}}</label>
+        <label>{{labels.intellect}}</label>
         <input type="number" name="system.attributes.intellect" value="{{system.attributes.intellect}}" min="1" max="20">
       </div>
     </div>
   </section>
 
   <section class="myttrpg-section">
-    <h2>{{localize "MYTTRPG.Section.biography"}}</h2>
+    <h2>{{labels.sectionBiography}}</h2>
     <textarea name="system.biography" rows="6">{{system.biography}}</textarea>
   </section>
   {{/if}}
@@ -59,12 +59,12 @@
   {{!-- NPC-only fields --}}
   {{#if isNPC}}
   <section class="myttrpg-section myttrpg-inline">
-    <label>{{localize "MYTTRPG.NPC.cr"}}</label>
+    <label>{{labels.cr}}</label>
     <input type="number" name="system.cr" value="{{system.cr}}" min="0">
   </section>
 
   <section class="myttrpg-section">
-    <h2>{{localize "MYTTRPG.Section.notes"}}</h2>
+    <h2>{{labels.sectionNotes}}</h2>
     <textarea name="system.notes" rows="6">{{system.notes}}</textarea>
   </section>
   {{/if}}

@@ -13,6 +13,20 @@ export class MyTTRPGActorSheet extends foundry.appv1.sheets.ActorSheet {
     const context = super.getData(options);
     context.isCharacter = this.actor.type === "character";
     context.isNPC = this.actor.type === "npc";
+    context.labels = {
+      sectionHealth:      game.i18n.localize("MYTTRPG.Section.health"),
+      sectionAttributes:  game.i18n.localize("MYTTRPG.Section.attributes"),
+      sectionBiography:   game.i18n.localize("MYTTRPG.Section.biography"),
+      sectionNotes:       game.i18n.localize("MYTTRPG.Section.notes"),
+      vitality:           game.i18n.localize("MYTTRPG.Health.vitality"),
+      poolName:           game.i18n.localize("MYTTRPG.Health.pool.name"),
+      addPool:            game.i18n.localize("MYTTRPG.Health.addPool"),
+      removePool:         game.i18n.localize("MYTTRPG.Health.removePool"),
+      strength:           game.i18n.localize("MYTTRPG.Attributes.strength"),
+      agility:            game.i18n.localize("MYTTRPG.Attributes.agility"),
+      intellect:          game.i18n.localize("MYTTRPG.Attributes.intellect"),
+      cr:                 game.i18n.localize("MYTTRPG.NPC.cr"),
+    };
     return context;
   }
 
