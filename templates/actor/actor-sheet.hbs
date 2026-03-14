@@ -55,7 +55,7 @@
       <span class="slot-label">{{labels.armorSlot}}</span>
       {{#if system.equippedArmor}}
         <span class="slot-item-name">{{system.equippedArmor.name}}</span>
-        <button type="button" class="myttrpg-btn-icon unequip-btn" data-slot="equippedArmorId" title="{{labels.unequip}}">&#x2715;</button>
+        <button type="button" class="myttrpg-btn-icon stow-btn" data-slot="equippedArmorId" title="{{labels.stow}}">&#x2193;</button>
       {{else}}
         <span class="slot-empty">{{labels.slotEmpty}}</span>
       {{/if}}
@@ -66,12 +66,33 @@
       <span class="slot-label">{{labels.shieldGeneratorSlot}}</span>
       {{#if system.equippedShield}}
         <span class="slot-item-name">{{system.equippedShield.name}}</span>
-        <button type="button" class="myttrpg-btn-icon unequip-btn" data-slot="equippedShieldId" title="{{labels.unequip}}">&#x2715;</button>
+        <button type="button" class="myttrpg-btn-icon stow-btn" data-slot="equippedShieldId" title="{{labels.stow}}">&#x2193;</button>
       {{else}}
         <span class="slot-empty">{{labels.slotEmpty}}</span>
       {{/if}}
     </div>
+  </section>
 
+  {{!-- Inventory --}}
+  <section class="myttrpg-section">
+    <h2>{{labels.sectionInventory}}</h2>
+    <div class="myttrpg-inventory">
+      {{#if system.inventoryItems.length}}
+        {{#each system.inventoryItems}}
+        <div class="myttrpg-inventory-item">
+          <span class="inv-item-name">{{name}}</span>
+          <span class="inv-item-type">{{typeName}}</span>
+          {{#if canEquip}}
+            <button type="button" class="myttrpg-btn-icon equip-item-btn" data-item-id="{{id}}" title="{{../labels.equip}}">&#x2191;</button>
+          {{else}}
+            <span class="pool-btn-spacer"></span>
+          {{/if}}
+          <button type="button" class="myttrpg-btn-icon delete-item-btn" data-item-id="{{id}}" title="{{../labels.deleteItem}}">&#x2715;</button>
+        </div>
+        {{/each}}
+      {{/if}}
+      <p class="inv-drop-hint">{{labels.inventoryEmpty}}</p>
+    </div>
   </section>
 
   {{!-- Attributes --}}
@@ -96,7 +117,7 @@
   {{!-- Biography --}}
   <section class="myttrpg-section">
     <h2>{{labels.sectionBiography}}</h2>
-    <textarea name="system.biography" rows="6">{{system.biography}}</textarea>
+    <textarea name="system.biography" rows="4">{{system.biography}}</textarea>
   </section>
 
   {{/if}}

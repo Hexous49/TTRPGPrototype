@@ -172,6 +172,56 @@
   font-size: 0.85em;
 }
 
+/* ---------- Inventory ---------- */
+.myttrpg-actor-sheet .myttrpg-inventory {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.myttrpg-actor-sheet .myttrpg-inventory-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 4px;
+  border-radius: 3px;
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.myttrpg-actor-sheet .myttrpg-inventory-item:nth-child(even) {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.myttrpg-actor-sheet .myttrpg-inventory-item .inv-item-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.myttrpg-actor-sheet .myttrpg-inventory-item .inv-item-type {
+  flex: 0 0 auto;
+  font-size: 0.72em;
+  color: #666;
+  background: rgba(0, 0, 0, 0.08);
+  padding: 1px 5px;
+  border-radius: 3px;
+  white-space: nowrap;
+}
+
+/* Persistent drop hint shown below item list at all times */
+.myttrpg-actor-sheet .inv-drop-hint {
+  margin: 4px 0 0 0;
+  color: #aaa;
+  font-style: italic;
+  font-size: 0.8em;
+  text-align: center;
+  border: 1px dashed #ccc;
+  border-radius: 3px;
+  padding: 4px;
+}
+
 /* ---------- Attributes ---------- */
 .myttrpg-actor-sheet .myttrpg-attributes {
   display: flex;

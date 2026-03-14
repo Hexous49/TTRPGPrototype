@@ -1,9 +1,15 @@
-// Maps item type → { slotIdField, maxField } so _equipItem/_unequipSlot
-// can work generically.  Add a new entry here whenever a new equippable
-// item type is introduced.
+// Maps item type → { slotIdField, maxField }.
+// To add a new equippable type: add one entry here and nowhere else.
 const EQUIPMENT_SLOTS = {
   shieldGenerator: { slotIdField: "equippedShieldId", maxField: "shieldMax" },
   armor:           { slotIdField: "equippedArmorId",  maxField: "armorMax"  },
+};
+
+const ITEM_TYPE_NAMES = {
+  weapon:          "Weapon",
+  skill:           "Skill",
+  shieldGenerator: "Shield Generator",
+  armor:           "Armor",
 };
 
 export class MyTTRPGActorSheet extends foundry.appv1.sheets.ActorSheet {
@@ -12,7 +18,7 @@ export class MyTTRPGActorSheet extends foundry.appv1.sheets.ActorSheet {
       classes: ["myttrpg", "actor-sheet"],
       template: "systems/myttrpg/templates/actor/actor-sheet.hbs",
       width: 620,
-      height: 680,
+      height: 740,
       resizable: true,
       closeOnSubmit: false,
     });
@@ -24,36 +30,60 @@ export class MyTTRPGActorSheet extends foundry.appv1.sheets.ActorSheet {
     context.isNPC       = this.actor.type === "npc";
 
     context.labels = {
-      sectionHealth:      "Health",
-      sectionAttributes:  "Attributes",
-      sectionEquipment:   "Equipment",
-      sectionBiography:   "Biography",
-      sectionNotes:       "Notes",
-      vitality:           "Vitality",
-      poolName:           "Pool Name",
-      addPool:            "Add Pool",
-      editPool:           "Edit Pool",
-      removePool:         "Remove Pool",
-      totalHealth:        "Total",
-      strength:           "Strength",
-      agility:            "Agility",
-      intellect:          "Intellect",
-      cr:                 "CR",
+      sectionHealth:       "Health",
+      sectionEquipment:    "Equipment",
+      sectionInventory:    "Inventory",
+      sectionAttributes:   "Attributes",
+      sectionBiography:    "Biography",
+      sectionNotes:        "Notes",
+      vitality:            "Vitality",
+      poolName:            "Pool Name",
+      addPool:             "Add Pool",
+      editPool:            "Edit Pool",
+      removePool:          "Remove Pool",
+      totalHealth:         "Total",
+      strength:            "Strength",
+      agility:             "Agility",
+      intellect:           "Intellect",
+      cr:                  "CR",
       shieldGeneratorSlot: "Shield Generator",
-      armorSlot:          "Armor",
-      slotEmpty:          "Drop here to equip",
-      unequip:            "Unequip",
+      armorSlot:           "Armor",
+      slotEmpty:           "Drop here to equip",
+      equip:               "Equip",
+      stow:                "Stow (return to inventory)",
+      deleteItem:          "Remove from inventory",
+      inventoryEmpty:      "Drop items here to add them",
     };
 
     const sys         = this.actor.system.toObject();
     const totalHealth = this.actor.system.totalHealth ?? { value: 0, max: 0 };
 
-    // Helper: resolve an equipped item ID to { id, name } or null
     const resolveEquipped = (id) => {
       if (!id) return null;
       const item = this.actor.items.get(id);
       return item ? { id: item.id, name: item.name } : null;
     };
+
+    // Inventory = every embedded item that is NOT filling an equipment slot
+    const equippedItemIds = new Set(
+      Object.values(EQUIPMENT_SLOTS)
+        .map(({ slotIdField }) => sys[slotIdField])
+        .filter(Boolean)
+    );
+
+    const inventoryItems = [...this.actor.items]
+      .filter(item => !equippedItemIds.has(item.id))
+      .map(item => {
+        const slotDef  = EQUIPMENT_SLOTS[item.type];
+        // "Equip" is available when the item has a slot definition AND that slot is empty
+        const canEquip = !!(slotDef && !sys[slotDef.slotIdField]);
+        return {
+          id:       item.id,
+          name:     item.name,
+          typeName: ITEM_TYPE_NAMES[item.type] ?? item.type,
+          canEquip,
+        };
+      });
 
     context.system = {
       vitality: {
@@ -69,6 +99,7 @@ export class MyTTRPGActorSheet extends foundry.appv1.sheets.ActorSheet {
       equippedShield:   resolveEquipped(sys.equippedShieldId),
       equippedArmorId:  sys.equippedArmorId  ?? "",
       equippedArmor:    resolveEquipped(sys.equippedArmorId),
+      inventoryItems,
       attributes: {
         strength:  sys.attributes?.strength  ?? 10,
         agility:   sys.attributes?.agility   ?? 10,
@@ -103,63 +134,62 @@ export class MyTTRPGActorSheet extends foundry.appv1.sheets.ActorSheet {
 
     html.find("input, textarea, select").change((ev) => this._onSubmit(ev));
 
+    // Health pools
     html.find(".add-pool").click((ev)    => this._onAddPool(ev));
     html.find(".edit-pool").click((ev)   => this._onEditPool(ev));
     html.find(".remove-pool").click((ev) => this._onRemovePool(ev));
 
-    // One listener per slot — each button carries a data-slot attribute
-    // matching the slotIdField so _unequipSlot knows which slot to clear.
-    html.find(".unequip-btn").click((ev) => {
-      const slot = ev.currentTarget.dataset.slot;
-      this._unequipSlot(slot);
+    // Equipment slot: stow button returns item to inventory without deleting it
+    html.find(".stow-btn").click((ev) => {
+      this._stowFromSlot(ev.currentTarget.dataset.slot);
+    });
+
+    // Inventory: equip moves item into its slot; delete removes it entirely
+    html.find(".equip-item-btn").click((ev) => {
+      this._equipFromInventory(ev.currentTarget.dataset.itemId);
+    });
+    html.find(".delete-item-btn").click((ev) => {
+      this._deleteInventoryItem(ev.currentTarget.dataset.itemId);
     });
   }
 
   // ─── Drop handling ────────────────────────────────────────────────────────
+  // Items dropped anywhere on the sheet go to inventory first.
+  // Equipping from inventory is done via the Equip button.
+  // (No override needed — super._onDropItem embeds the item by default.)
 
-  async _onDropItem(event, data) {
-    if (!this.actor.isOwner) return false;
-    const item = await fromUuid(data.uuid);
-    if (!item) return super._onDropItem(event, data);
+  // ─── Equipment: Equip from inventory ─────────────────────────────────────
+
+  async _equipFromInventory(itemId) {
+    const item = this.actor.items.get(itemId);
+    if (!item) return;
 
     const slotDef = EQUIPMENT_SLOTS[item.type];
-    if (slotDef) return this._equipItem(item, slotDef.slotIdField, slotDef.maxField);
-
-    return super._onDropItem(event, data);
-  }
-
-  // ─── Generic equip / unequip ──────────────────────────────────────────────
-
-  async _equipItem(item, slotIdField, maxField) {
-    // Swap out whatever is already in this slot
-    if (this.actor.system[slotIdField]) {
-      await this._unequipSlot(slotIdField, false);
-    }
-
-    const [embedded] = await this.actor.createEmbeddedDocuments("Item", [item.toObject()]);
+    if (!slotDef) return;
+    if (this.actor.system[slotDef.slotIdField]) return; // slot already filled
 
     const pools = [
       ...this.actor.system.toObject().pools,
-      { name: embedded.name, value: 0, max: embedded.system[maxField], sourceItemId: embedded.id },
+      { name: item.name, value: 0, max: item.system[slotDef.maxField], sourceItemId: item.id },
     ];
 
     await this.actor.update({
-      [`system.${slotIdField}`]: embedded.id,
+      [`system.${slotDef.slotIdField}`]: item.id,
       "system.pools": pools,
     });
 
     this.render(false);
   }
 
-  async _unequipSlot(slotIdField, rerender = true) {
+  // ─── Equipment: Stow from slot back to inventory ──────────────────────────
+
+  async _stowFromSlot(slotIdField, rerender = true) {
     const equippedId = this.actor.system[slotIdField];
     if (!equippedId) return;
 
+    // Remove the pool but keep the embedded item — it reappears in inventory
     const pools = this.actor.system.toObject().pools
       .filter(p => p.sourceItemId !== equippedId);
-
-    const embeddedItem = this.actor.items.get(equippedId);
-    if (embeddedItem) await embeddedItem.delete();
 
     await this.actor.update({
       [`system.${slotIdField}`]: "",
@@ -167,6 +197,30 @@ export class MyTTRPGActorSheet extends foundry.appv1.sheets.ActorSheet {
     });
 
     if (rerender) this.render(false);
+  }
+
+  // ─── Inventory: Delete item ───────────────────────────────────────────────
+
+  async _deleteInventoryItem(itemId) {
+    const item = this.actor.items.get(itemId);
+    if (!item) return;
+
+    // Safety: clean up any dangling pool / slot references
+    const pools   = this.actor.system.toObject().pools;
+    const updates = {};
+
+    if (pools.some(p => p.sourceItemId === itemId)) {
+      updates["system.pools"] = pools.filter(p => p.sourceItemId !== itemId);
+    }
+    for (const { slotIdField } of Object.values(EQUIPMENT_SLOTS)) {
+      if (this.actor.system[slotIdField] === itemId) {
+        updates[`system.${slotIdField}`] = "";
+      }
+    }
+
+    if (Object.keys(updates).length) await this.actor.update(updates);
+    await item.delete();
+    this.render(false);
   }
 
   // ─── Health pools ─────────────────────────────────────────────────────────
@@ -284,12 +338,8 @@ export class MyTTRPGActorSheet extends foundry.appv1.sheets.ActorSheet {
 
     const updates = { "system.pools": pools.filter((_, i) => i !== index) };
 
-    // If this pool was created by an equipped item, clean up that slot too
     if (pool.sourceItemId) {
-      const embeddedItem = this.actor.items.get(pool.sourceItemId);
-      if (embeddedItem) await embeddedItem.delete();
-
-      // Clear whichever equipment slot referenced this item
+      // Clear the equipment slot — item stays in inventory (not deleted)
       for (const { slotIdField } of Object.values(EQUIPMENT_SLOTS)) {
         if (this.actor.system[slotIdField] === pool.sourceItemId) {
           updates[`system.${slotIdField}`] = "";
