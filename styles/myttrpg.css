@@ -1,1 +1,134 @@
-/* My TTRPG System Styles */
+/* ============================================================
+   My TTRPG System Styles
+   ============================================================ */
+
+/* ---------- Sheet Layout ---------- */
+.myttrpg-actor-sheet .myttrpg-sheet-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.myttrpg-actor-sheet .myttrpg-actor-portrait {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  border: 1px solid #999;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.myttrpg-actor-sheet .myttrpg-sheet-header h1 {
+  flex: 1;
+  margin: 0;
+}
+
+.myttrpg-actor-sheet .myttrpg-sheet-header h1 input {
+  width: 100%;
+  font-size: 1.4em;
+  font-weight: bold;
+}
+
+/* ---------- Sections ---------- */
+.myttrpg-actor-sheet .myttrpg-section {
+  margin-bottom: 10px;
+}
+
+.myttrpg-actor-sheet .myttrpg-section h2 {
+  border-bottom: 1px solid #999;
+  margin: 4px 0;
+  font-size: 1em;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Inline label+input section (used for CR) */
+.myttrpg-actor-sheet .myttrpg-section.myttrpg-inline {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ---------- Health Pools ---------- */
+.myttrpg-actor-sheet .myttrpg-pool {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 4px;
+}
+
+/* Fixed label for the named pools (Vitality) */
+.myttrpg-actor-sheet .myttrpg-pool .pool-label {
+  flex: 1;
+  min-width: 0;
+  font-weight: bold;
+}
+
+/* The value/max number inputs sit snugly around the slash */
+.myttrpg-actor-sheet .myttrpg-pool input[type="number"] {
+  width: 52px;
+  text-align: center;
+  flex: 0 0 auto;
+}
+
+/* Editable name input on dynamic pools (same width as label) */
+.myttrpg-actor-sheet .myttrpg-pool input[type="text"].pool-label {
+  font-weight: normal;
+}
+
+.myttrpg-actor-sheet .myttrpg-pool .pool-sep {
+  flex: 0 0 auto;
+  padding: 0 2px;
+}
+
+/* Remove pool (×) button */
+.myttrpg-actor-sheet .myttrpg-btn-icon {
+  flex: 0 0 auto;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  line-height: 18px;
+  text-align: center;
+  font-size: 0.75em;
+  cursor: pointer;
+}
+
+/* Add Pool button */
+.myttrpg-actor-sheet .myttrpg-btn {
+  margin-top: 4px;
+  padding: 2px 8px;
+  cursor: pointer;
+}
+
+/* ---------- Attributes ---------- */
+.myttrpg-actor-sheet .myttrpg-attributes {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.myttrpg-actor-sheet .myttrpg-attribute {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.myttrpg-actor-sheet .myttrpg-attribute label {
+  font-size: 0.8em;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.myttrpg-actor-sheet .myttrpg-attribute input[type="number"] {
+  width: 52px;
+  text-align: center;
+}
+
+/* ---------- Biography / Notes ---------- */
+.myttrpg-actor-sheet textarea {
+  width: 100%;
+  resize: vertical;
+  box-sizing: border-box;
+}
