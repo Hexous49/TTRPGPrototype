@@ -28,6 +28,13 @@
       <button type="button" class="myttrpg-btn-icon edit-pool" data-index="{{@index}}" title="{{../labels.editPool}}">&#9998;</button>
       <button type="button" class="myttrpg-btn-icon remove-pool" data-index="{{@index}}" title="{{../labels.removePool}}">&#x2715;</button>
     </div>
+    {{#if rechargeTrackPips}}
+    <div class="myttrpg-recharge-track">
+      {{#each rechargeTrackPips}}
+      <span class="myttrpg-track-pip{{#if active}} active{{/if}}">{{amount}}</span>
+      {{/each}}
+    </div>
+    {{/if}}
     {{/each}}
 
     {{!-- Total: sum of vitality + all pools --}}

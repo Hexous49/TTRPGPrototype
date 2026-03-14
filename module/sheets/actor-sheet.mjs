@@ -63,6 +63,11 @@ export class MyTTRPGActorSheet extends foundry.appv1.sheets.ActorSheet {
     const sys         = this.actor.system.toObject();
     const totalHealth = this.actor.system.totalHealth ?? { value: 0, max: 0 };
 
+    // Look up the equipped shield item's recharge track for pool enrichment below.
+    const shieldTrackItem = sys.equippedShieldId
+      ? this.actor.items.get(sys.equippedShieldId) : null;
+    const shieldTrack = shieldTrackItem?.system?.rechargeTrack ?? null;
+
     const resolveEquipped = (id) => {
       if (!id) return null;
       const item = this.actor.items.get(id);
@@ -107,7 +112,20 @@ export class MyTTRPGActorSheet extends foundry.appv1.sheets.ActorSheet {
         value: sys.vitality?.value ?? 0,
         max:   sys.vitality?.max   ?? 0,
       },
-      pools: sys.pools ?? [],
+      pools: (sys.pools ?? []).map(p => {
+        // For the equipped shield pool, attach pip data so the template can
+        // render the recharge track with the current position highlighted.
+        const isShieldPool = !!(p.sourceItemId && p.sourceItemId === sys.equippedShieldId);
+        return {
+          ...p,
+          rechargeTrackPips: (isShieldPool && shieldTrack)
+            ? shieldTrack.map((amount, i) => ({
+                amount,
+                active: i === (p.rechargePosition ?? 0),
+              }))
+            : null,
+        };
+      }),
       totalHealth: {
         value: totalHealth.value ?? 0,
         max:   totalHealth.max   ?? 0,

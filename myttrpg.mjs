@@ -88,7 +88,8 @@ Hooks.on("updateCombat", async (combat, changes, _options, _userId) => {
     const amount = track[pos] ?? track[0];
 
     rawPools[idx].value            = Math.min(pool.max, pool.value + amount);
-    rawPools[idx].rechargePosition = (pos + 1) % track.length;
+    // Clamp at the last entry — position stays there until damage resets it to 0.
+    rawPools[idx].rechargePosition = Math.min(pos + 1, track.length - 1);
     await actor.update({ "system.pools": rawPools });
   }
 });

@@ -2,7 +2,7 @@
   "id": "myttrpg",
   "title": "My TTRPG",
   "description": "An original TTRPG system prototype.",
-  "version": "0.3.26",
+  "version": "0.3.27",
   "compatibility": {
     "minimum": "12",
     "verified": "13"
