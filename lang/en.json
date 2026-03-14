@@ -16,6 +16,9 @@
   "MYTTRPG.Health.pool.value": "Current",
   "MYTTRPG.Health.pool.max": "Max",
   "MYTTRPG.Health.addPool": "Add Pool",
+  "MYTTRPG.Health.addPool.title": "Add Health Pool",
+  "MYTTRPG.Health.addPool.confirm": "Add",
+  "MYTTRPG.Health.pool.default": "New Pool",
   "MYTTRPG.Health.removePool": "Remove Pool",
   "MYTTRPG.NPC.cr": "CR"
 }
