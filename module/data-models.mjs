@@ -27,6 +27,7 @@ export class MyTTRPGCharacterData extends foundry.abstract.TypeDataModel {
       pools:            new fields.ArrayField(healthPoolSchema()),
       totalHealth:      totalHealthSchema(),
       equippedShieldId: new fields.StringField({ initial: "" }),
+      equippedArmorId:  new fields.StringField({ initial: "" }),
       attributes: new fields.SchemaField({
         strength:  new fields.NumberField({ required: true, nullable: false, integer: true, min: 1, max: 20, initial: 10 }),
         agility:   new fields.NumberField({ required: true, nullable: false, integer: true, min: 1, max: 20, initial: 10 }),
@@ -106,6 +107,15 @@ export class MyTTRPGShieldGeneratorData extends foundry.abstract.TypeDataModel {
   static defineSchema() {
     return {
       shieldMax:   new fields.NumberField({ required: true, nullable: false, integer: true, min: 0, initial: 10 }),
+      description: new fields.HTMLField(),
+    };
+  }
+}
+
+export class MyTTRPGArmorData extends foundry.abstract.TypeDataModel {
+  static defineSchema() {
+    return {
+      armorMax:    new fields.NumberField({ required: true, nullable: false, integer: true, min: 0, initial: 10 }),
       description: new fields.HTMLField(),
     };
   }

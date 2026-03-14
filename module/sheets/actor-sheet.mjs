@@ -1,10 +1,18 @@
+// Maps item type → { slotIdField, maxField } so _equipItem/_unequipSlot
+// can work generically.  Add a new entry here whenever a new equippable
+// item type is introduced.
+const EQUIPMENT_SLOTS = {
+  shieldGenerator: { slotIdField: "equippedShieldId", maxField: "shieldMax" },
+  armor:           { slotIdField: "equippedArmorId",  maxField: "armorMax"  },
+};
+
 export class MyTTRPGActorSheet extends foundry.appv1.sheets.ActorSheet {
   static get defaultOptions() {
     return foundry.utils.mergeObject(super.defaultOptions, {
       classes: ["myttrpg", "actor-sheet"],
       template: "systems/myttrpg/templates/actor/actor-sheet.hbs",
       width: 620,
-      height: 620,
+      height: 680,
       resizable: true,
       closeOnSubmit: false,
     });
@@ -15,7 +23,6 @@ export class MyTTRPGActorSheet extends foundry.appv1.sheets.ActorSheet {
     context.isCharacter = this.actor.type === "character";
     context.isNPC       = this.actor.type === "npc";
 
-    // Hardcode English labels — game.i18n is not loading our lang file
     context.labels = {
       sectionHealth:      "Health",
       sectionAttributes:  "Attributes",
@@ -33,23 +40,20 @@ export class MyTTRPGActorSheet extends foundry.appv1.sheets.ActorSheet {
       intellect:          "Intellect",
       cr:                 "CR",
       shieldGeneratorSlot: "Shield Generator",
-      slotEmpty:          "Drop a Shield Generator here",
+      armorSlot:          "Armor",
+      slotEmpty:          "Drop here to equip",
       unequip:            "Unequip",
     };
 
-    // Build a plain system object with null-safe values.
-    // totalHealth IS in the schema but overwritten by prepareDerivedData() —
-    // read from the live system object so we always get the computed totals.
     const sys         = this.actor.system.toObject();
     const totalHealth = this.actor.system.totalHealth ?? { value: 0, max: 0 };
 
-    // Resolve equipped shield item info for the template
-    const equippedShieldId = sys.equippedShieldId ?? "";
-    let equippedShield = null;
-    if (equippedShieldId) {
-      const shieldItem = this.actor.items.get(equippedShieldId);
-      if (shieldItem) equippedShield = { id: shieldItem.id, name: shieldItem.name };
-    }
+    // Helper: resolve an equipped item ID to { id, name } or null
+    const resolveEquipped = (id) => {
+      if (!id) return null;
+      const item = this.actor.items.get(id);
+      return item ? { id: item.id, name: item.name } : null;
+    };
 
     context.system = {
       vitality: {
@@ -61,8 +65,10 @@ export class MyTTRPGActorSheet extends foundry.appv1.sheets.ActorSheet {
         value: totalHealth.value ?? 0,
         max:   totalHealth.max   ?? 0,
       },
-      equippedShieldId,
-      equippedShield,
+      equippedShieldId: sys.equippedShieldId ?? "",
+      equippedShield:   resolveEquipped(sys.equippedShieldId),
+      equippedArmorId:  sys.equippedArmorId  ?? "",
+      equippedArmor:    resolveEquipped(sys.equippedArmorId),
       attributes: {
         strength:  sys.attributes?.strength  ?? 10,
         agility:   sys.attributes?.agility   ?? 10,
@@ -79,9 +85,6 @@ export class MyTTRPGActorSheet extends foundry.appv1.sheets.ActorSheet {
   async _updateObject(event, formData) {
     const expanded = foundry.utils.expandObject(formData);
 
-    // expandObject leaves numeric-keyed pool children as objects — convert to array.
-    // The form only submits `value` for each pool (name/max/sourceItemId are read-only
-    // spans), so merge into existing pool records to preserve those fields.
     if (expanded.system?.pools && !Array.isArray(expanded.system.pools)) {
       const existing = this.actor.system.toObject().pools;
       const incoming = Object.values(expanded.system.pools);
@@ -98,13 +101,18 @@ export class MyTTRPGActorSheet extends foundry.appv1.sheets.ActorSheet {
     super.activateListeners(html);
     if (!this.isEditable) return;
 
-    // Manually save on any field change (submitOnChange is unreliable in appv1 on v13)
     html.find("input, textarea, select").change((ev) => this._onSubmit(ev));
 
     html.find(".add-pool").click((ev)    => this._onAddPool(ev));
     html.find(".edit-pool").click((ev)   => this._onEditPool(ev));
     html.find(".remove-pool").click((ev) => this._onRemovePool(ev));
-    html.find(".unequip-shield").click(() => this._unequipShield());
+
+    // One listener per slot — each button carries a data-slot attribute
+    // matching the slotIdField so _unequipSlot knows which slot to clear.
+    html.find(".unequip-btn").click((ev) => {
+      const slot = ev.currentTarget.dataset.slot;
+      this._unequipSlot(slot);
+    });
   }
 
   // ─── Drop handling ────────────────────────────────────────────────────────
@@ -114,52 +122,47 @@ export class MyTTRPGActorSheet extends foundry.appv1.sheets.ActorSheet {
     const item = await fromUuid(data.uuid);
     if (!item) return super._onDropItem(event, data);
 
-    if (item.type === "shieldGenerator") {
-      return this._equipShieldGenerator(item);
-    }
+    const slotDef = EQUIPMENT_SLOTS[item.type];
+    if (slotDef) return this._equipItem(item, slotDef.slotIdField, slotDef.maxField);
 
     return super._onDropItem(event, data);
   }
 
-  // ─── Equipment ────────────────────────────────────────────────────────────
+  // ─── Generic equip / unequip ──────────────────────────────────────────────
 
-  async _equipShieldGenerator(item) {
-    // Swap out any already-equipped shield first
-    if (this.actor.system.equippedShieldId) {
-      await this._unequipShield(false);
+  async _equipItem(item, slotIdField, maxField) {
+    // Swap out whatever is already in this slot
+    if (this.actor.system[slotIdField]) {
+      await this._unequipSlot(slotIdField, false);
     }
 
-    // Embed a copy of the item on this actor
     const [embedded] = await this.actor.createEmbeddedDocuments("Item", [item.toObject()]);
 
-    // Add a pool sourced from this item (sourceItemId links pool ↔ item)
     const pools = [
       ...this.actor.system.toObject().pools,
-      { name: embedded.name, value: 0, max: embedded.system.shieldMax, sourceItemId: embedded.id },
+      { name: embedded.name, value: 0, max: embedded.system[maxField], sourceItemId: embedded.id },
     ];
 
     await this.actor.update({
-      "system.equippedShieldId": embedded.id,
+      [`system.${slotIdField}`]: embedded.id,
       "system.pools": pools,
     });
 
     this.render(false);
   }
 
-  async _unequipShield(rerender = true) {
-    const equippedId = this.actor.system.equippedShieldId;
+  async _unequipSlot(slotIdField, rerender = true) {
+    const equippedId = this.actor.system[slotIdField];
     if (!equippedId) return;
 
-    // Remove the pool that was created for this item
     const pools = this.actor.system.toObject().pools
       .filter(p => p.sourceItemId !== equippedId);
 
-    // Delete the embedded item document from the actor
     const embeddedItem = this.actor.items.get(equippedId);
     if (embeddedItem) await embeddedItem.delete();
 
     await this.actor.update({
-      "system.equippedShieldId": "",
+      [`system.${slotIdField}`]: "",
       "system.pools": pools,
     });
 
@@ -169,26 +172,24 @@ export class MyTTRPGActorSheet extends foundry.appv1.sheets.ActorSheet {
   // ─── Health pools ─────────────────────────────────────────────────────────
 
   _onAddPool(ev) {
-    const content = `
-      <form>
-        <div class="form-group">
-          <label>Pool Name</label>
-          <input type="text" name="name" value="" placeholder="Pool Name">
-        </div>
-        <div class="form-group">
-          <label>Current</label>
-          <input type="number" name="value" value="0" min="0">
-        </div>
-        <div class="form-group">
-          <label>Max</label>
-          <input type="number" name="max" value="0" min="0">
-        </div>
-      </form>
-    `;
-
     new Dialog({
       title: "Add Health Pool",
-      content,
+      content: `
+        <form>
+          <div class="form-group">
+            <label>Pool Name</label>
+            <input type="text" name="name" value="" placeholder="Pool Name">
+          </div>
+          <div class="form-group">
+            <label>Current</label>
+            <input type="number" name="value" value="0" min="0">
+          </div>
+          <div class="form-group">
+            <label>Max</label>
+            <input type="number" name="max" value="0" min="0">
+          </div>
+        </form>
+      `,
       buttons: {
         create: {
           icon: '<i class="fas fa-check"></i>',
@@ -202,10 +203,7 @@ export class MyTTRPGActorSheet extends foundry.appv1.sheets.ActorSheet {
             this.render(false);
           },
         },
-        cancel: {
-          icon: '<i class="fas fa-times"></i>',
-          label: "Cancel",
-        },
+        cancel: { icon: '<i class="fas fa-times"></i>', label: "Cancel" },
       },
       default: "create",
     }).render(true);
@@ -286,12 +284,16 @@ export class MyTTRPGActorSheet extends foundry.appv1.sheets.ActorSheet {
 
     const updates = { "system.pools": pools.filter((_, i) => i !== index) };
 
-    // If this pool was created by an equipped item, also clean up the item slot
+    // If this pool was created by an equipped item, clean up that slot too
     if (pool.sourceItemId) {
       const embeddedItem = this.actor.items.get(pool.sourceItemId);
       if (embeddedItem) await embeddedItem.delete();
-      if (this.actor.system.equippedShieldId === pool.sourceItemId) {
-        updates["system.equippedShieldId"] = "";
+
+      // Clear whichever equipment slot referenced this item
+      for (const { slotIdField } of Object.values(EQUIPMENT_SLOTS)) {
+        if (this.actor.system[slotIdField] === pool.sourceItemId) {
+          updates[`system.${slotIdField}`] = "";
+        }
       }
     }
 

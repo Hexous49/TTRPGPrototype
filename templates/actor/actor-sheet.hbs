@@ -49,15 +49,29 @@
   {{!-- Equipment --}}
   <section class="myttrpg-section">
     <h2>{{labels.sectionEquipment}}</h2>
-    <div class="myttrpg-equipment-slot{{#if system.equippedShield}} equipped{{/if}}">
-      <span class="slot-label">{{labels.shieldGeneratorSlot}}</span>
-      {{#if system.equippedShield}}
-        <span class="slot-item-name">{{system.equippedShield.name}}</span>
-        <button type="button" class="myttrpg-btn-icon unequip-shield" title="{{labels.unequip}}">&#x2715;</button>
+
+    {{!-- Armor slot --}}
+    <div class="myttrpg-equipment-slot{{#if system.equippedArmor}} equipped{{/if}}">
+      <span class="slot-label">{{labels.armorSlot}}</span>
+      {{#if system.equippedArmor}}
+        <span class="slot-item-name">{{system.equippedArmor.name}}</span>
+        <button type="button" class="myttrpg-btn-icon unequip-btn" data-slot="equippedArmorId" title="{{labels.unequip}}">&#x2715;</button>
       {{else}}
         <span class="slot-empty">{{labels.slotEmpty}}</span>
       {{/if}}
     </div>
+
+    {{!-- Shield Generator slot --}}
+    <div class="myttrpg-equipment-slot{{#if system.equippedShield}} equipped{{/if}}">
+      <span class="slot-label">{{labels.shieldGeneratorSlot}}</span>
+      {{#if system.equippedShield}}
+        <span class="slot-item-name">{{system.equippedShield.name}}</span>
+        <button type="button" class="myttrpg-btn-icon unequip-btn" data-slot="equippedShieldId" title="{{labels.unequip}}">&#x2715;</button>
+      {{else}}
+        <span class="slot-empty">{{labels.slotEmpty}}</span>
+      {{/if}}
+    </div>
+
   </section>
 
   {{!-- Attributes --}}

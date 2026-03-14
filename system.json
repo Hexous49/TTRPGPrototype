@@ -2,7 +2,7 @@
   "id": "myttrpg",
   "title": "My TTRPG",
   "description": "An original TTRPG system prototype.",
-  "version": "0.3.13",
+  "version": "0.3.14",
   "compatibility": {
     "minimum": "12",
     "verified": "13"
@@ -38,6 +38,9 @@
         "htmlFields": ["description"]
       },
       "shieldGenerator": {
+        "htmlFields": ["description"]
+      },
+      "armor": {
         "htmlFields": ["description"]
       }
     }
