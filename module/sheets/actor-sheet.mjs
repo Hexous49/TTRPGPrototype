@@ -20,12 +20,12 @@ export class MyTTRPGActorSheet extends foundry.appv1.sheets.ActorSheet {
     super.activateListeners(html);
     if (!this.isEditable) return;
 
-    html.find("[data-action='addPool']").click(async (ev) => {
+    html.find(".add-pool").click(async (ev) => {
       const pools = [...this.actor.system.pools, { name: "New Pool", value: 0, max: 0 }];
       await this.actor.update({ "system.pools": pools });
     });
 
-    html.find("[data-action='removePool']").click(async (ev) => {
+    html.find(".remove-pool").click(async (ev) => {
       const index = Number(ev.currentTarget.dataset.index);
       const pools = this.actor.system.pools.filter((_, i) => i !== index);
       await this.actor.update({ "system.pools": pools });

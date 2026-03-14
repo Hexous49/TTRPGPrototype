@@ -23,11 +23,11 @@
       <input type="number" name="system.pools.{{@index}}.value" value="{{value}}" min="0">
       <span class="pool-sep">/</span>
       <input type="number" name="system.pools.{{@index}}.max" value="{{max}}" min="0">
-      <button type="button" class="myttrpg-btn-icon" data-action="removePool" data-index="{{@index}}" title="{{localize 'MYTTRPG.Health.removePool'}}">&#x2715;</button>
+        <button type="button" class="myttrpg-btn-icon remove-pool" data-index="{{@index}}" title="{{localize 'MYTTRPG.Health.removePool'}}">&#x2715;</button>
     </div>
     {{/each}}
 
-    <button type="button" class="myttrpg-btn" data-action="addPool">{{localize "MYTTRPG.Health.addPool"}}</button>
+    <button type="button" class="myttrpg-btn add-pool">{{localize "MYTTRPG.Health.addPool"}}</button>
   </section>
 
   {{!-- Character: Attributes + Biography --}}
