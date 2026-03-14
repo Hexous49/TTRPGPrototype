@@ -317,3 +317,14 @@
   width: 60px;
   cursor: pointer;
 }
+
+/* Depleted pools are dimmed and their button is non-interactive */
+.myttrpg-damage-dialog .myttrpg-damage-row--depleted .myttrpg-damage-pool-name,
+.myttrpg-damage-dialog .myttrpg-damage-row--depleted .myttrpg-damage-pool-value {
+  opacity: 0.4;
+}
+
+.myttrpg-damage-dialog .myttrpg-apply-pool-btn[disabled] {
+  opacity: 0.35;
+  cursor: not-allowed;
+}

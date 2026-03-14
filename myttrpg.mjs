@@ -55,20 +55,26 @@ Hooks.on("renderChatMessage", (message, html) => {
       .addEventListener("click", () => myttrpgOpenApplyDialog(total));
 });
 
-function myttrpgOpenApplyDialog(damage) {
-  // Require exactly one selected token
-  const tokens = canvas.tokens?.controlled ?? [];
-  if (!tokens.length) {
-    ui.notifications.warn("Select a token on the canvas first.");
-    return;
-  }
+// actor defaults to null on the first call; recursive re-opens pass the same
+// actor reference so the token doesn't need to stay selected.
+function myttrpgOpenApplyDialog(damage, actor = null) {
+  if (damage <= 0) return;
 
-  const actor = tokens[0].actor;
+  // First call: resolve actor from the selected token.
+  if (!actor) {
+    const tokens = canvas.tokens?.controlled ?? [];
+    if (!tokens.length) {
+      ui.notifications.warn("Select a token on the canvas first.");
+      return;
+    }
+    actor = tokens[0].actor;
+  }
   if (!actor?.system) return;
 
   const sys = actor.system;
 
-  // Build a flat list of every pool the actor has
+  // Build a flat list of every pool the actor has (always include depleted ones
+  // so the player can see the full picture).
   const pools = [
     { label: "Vitality", value: sys.vitality?.value ?? 0, max: sys.vitality?.max ?? 0, key: "vitality" },
     ...(sys.pools ?? []).map((p, i) => ({
@@ -79,12 +85,21 @@ function myttrpgOpenApplyDialog(damage) {
     })),
   ];
 
-  const rows = pools.map(p => `
-    <div class="myttrpg-damage-row">
+  // Bail out early if every pool is already empty.
+  if (!pools.some(p => p.value > 0)) {
+    ui.notifications.warn(`${damage} damage could not be fully absorbed — all pools are empty.`);
+    return;
+  }
+
+  const rows = pools.map(p => {
+    const depleted = p.value <= 0;
+    return `
+    <div class="myttrpg-damage-row${depleted ? " myttrpg-damage-row--depleted" : ""}">
       <span class="myttrpg-damage-pool-name">${p.label}</span>
       <span class="myttrpg-damage-pool-value">${p.value} / ${p.max}</span>
-      <button type="button" class="myttrpg-apply-pool-btn" data-key="${p.key}">Apply</button>
-    </div>`).join("");
+      <button type="button" class="myttrpg-apply-pool-btn" data-key="${p.key}"${depleted ? " disabled" : ""}>Apply</button>
+    </div>`;
+  }).join("");
 
   const d = new Dialog({
     title: `Apply ${damage} Damage — ${actor.name}`,
@@ -93,22 +108,31 @@ function myttrpgOpenApplyDialog(damage) {
       cancel: { icon: '<i class="fas fa-times"></i>', label: "Cancel" },
     },
     render: (html) => {
-      html.find(".myttrpg-apply-pool-btn").click(async (ev) => {
+      html.find(".myttrpg-apply-pool-btn:not([disabled])").click(async (ev) => {
         const key = ev.currentTarget.dataset.key;
+        let remaining = 0;
 
         if (key === "vitality") {
-          const newVal = Math.max(0, (actor.system.vitality?.value ?? 0) - damage);
-          await actor.update({ "system.vitality.value": newVal });
+          const current  = actor.system.vitality?.value ?? 0;
+          const absorbed = Math.min(current, damage);
+          remaining = damage - absorbed;
+          await actor.update({ "system.vitality.value": current - absorbed });
 
         } else if (key.startsWith("pool:")) {
-          const idx = parseInt(key.split(":")[1]);
-          const updatedPools = actor.system.toObject().pools;
-          if (updatedPools[idx]) {
-            updatedPools[idx].value = Math.max(0, updatedPools[idx].value - damage);
-            await actor.update({ "system.pools": updatedPools });
+          const idx      = parseInt(key.split(":")[1]);
+          const rawPools = actor.system.toObject().pools;
+          if (rawPools[idx]) {
+            const current  = rawPools[idx].value;
+            const absorbed = Math.min(current, damage);
+            remaining = damage - absorbed;
+            rawPools[idx].value = current - absorbed;
+            await actor.update({ "system.pools": rawPools });
           }
         }
+
         d.close();
+        // If the pool couldn't absorb everything, reopen for the remainder.
+        if (remaining > 0) myttrpgOpenApplyDialog(remaining, actor);
       });
     },
     default: "cancel",
