@@ -32,7 +32,7 @@
     }
   },
   "socket": false,
-  "url": "",
-  "manifest": "",
-  "download": ""
+  "url": "https://github.com/Hexous49/TTRPGPrototype",
+  "manifest": "https://raw.githubusercontent.com/Hexous49/TTRPGPrototype/main/system.json",
+  "download": "https://github.com/Hexous49/TTRPGPrototype/archive/refs/heads/main.zip"
 }
